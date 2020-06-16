@@ -1,6 +1,8 @@
 <h1 align="center" style="font-weight: bold">GoSpy</h1>
 
-<img align="center" height=200 width=200 src="./icon.png"/>
+<p align="center">
+  <img height=200 width=200 src="./icon.png"/>
+</p>
 
 <p align="center">A cross-platform post-exploitation tool for penetration testing</p>
 
