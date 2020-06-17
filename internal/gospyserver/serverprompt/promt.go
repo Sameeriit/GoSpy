@@ -8,6 +8,7 @@ var suggestions = []prompt.Suggest{
 	{"exit", "Exit GoSpyServer"},
 }
 
+// Completer is the completer function for the go-prompt prompt used by GoSpyServer.
 func Completer(in prompt.Document) []prompt.Suggest {
 	w := in.GetWordBeforeCursor()
 	if w == "" {
