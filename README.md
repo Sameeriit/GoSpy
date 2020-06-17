@@ -40,15 +40,20 @@ interact with it.
 These are almost all currently a WIP
 
 - [x] Cross-platform with `CGO_ENABLED=0` (compiles to any target that Go supports)
-- [ ] Basic communication over TCP sockets
-- [ ] Encrypted communication over TCP sockets
-- [ ] Reverse shell
+- [x] Basic communication over TCP sockets
+- [ ] Encrypted communication over TCP sockets using a shared key
+- [x] Safe error handling for client so it won't suddenly drop on error
+- [x] Reverse shell
 - [ ] System information dump
 - [ ] Screen grab
 - [ ] File grab
 - [ ] File drop
 - [ ] Execute Lua scripts on target machine (using [gopher-lua](https://github.com/yuin/gopher-lua))
 - [ ] More?
+
+## Screenshot
+
+<img src="./demo.png" />
 
 ## Why?
 

