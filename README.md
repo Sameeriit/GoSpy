@@ -6,9 +6,9 @@
     <a href="https://github.com/psidex/GoSpy/actions" >
         <img src="https://github.com/psidex/GoSpy/workflows/go%20build%20windows/badge.svg" />
     </a>
-        <a href="https://github.com/psidex/GoSpy/actions" >
-            <img src="https://github.com/psidex/GoSpy/workflows/go%20build%20ubuntu/badge.svg" />
-        </a>
+    <a href="https://github.com/psidex/GoSpy/actions" >
+        <img src="https://github.com/psidex/GoSpy/workflows/go%20build%20ubuntu/badge.svg" />
+    </a>
     <a href="https://goreportcard.com/report/github.com/psidex/GoSpy" >
         <img src="https://goreportcard.com/badge/github.com/psidex/GoSpy" />
     </a>
