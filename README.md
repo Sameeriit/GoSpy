@@ -14,7 +14,7 @@
         <img src="https://goreportcard.com/badge/github.com/psidex/GoSpy" />
     </a>
     <a href="./LICENSE" >
-        <img src="https://img.shields.io/github/license/psidex/GoSpy.svg" />
+        <img src="https://img.shields.io/github/license/psidex/GoSpy" />
     </a>
     <a href="https://ko-fi.com/M4M18XB1" >
         <img src="https://img.shields.io/badge/support%20me-Ko--fi-orange.svg?style=flat&colorA=35383d" />
