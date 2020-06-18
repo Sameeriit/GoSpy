@@ -13,7 +13,12 @@ import (
 
 // ToDo: What happens if the client drops and/or becomes un-responsive?
 
-const version = "0.0.1"
+const banner = `
+   ___     ___             ___                      
+  / __|___/ __|_ __ _  _  / __| ___ _ ___ _____ _ _ 
+ | (_ / _ \__ \ '_ \ || | \__ \/ -_) '_\ V / -_) '_|
+  \___\___/___/ .__/\_, | |___/\___|_|  \_/\___|_|  
+              |_|   |__/              v0.0.1`
 
 var spyClient client.GoSpyClient
 
@@ -47,8 +52,8 @@ func executor(in string) {
 func main() {
 	address := *flag.String("b", "0.0.0.0:12345", "the address (ip:port) to bind the gospyserver to")
 
-	fmt.Printf("GoSpyServer v%s\n", version)
-	fmt.Printf("Listening on %s\n", address)
+	fmt.Println(banner)
+	fmt.Printf("\nListening on %s\n", address)
 	fmt.Println("Waiting for connection from GoSpy client...")
 
 	var err error // So we don't assign a local spyClient using := below.

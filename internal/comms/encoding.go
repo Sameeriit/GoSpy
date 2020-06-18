@@ -4,10 +4,12 @@ import (
 	"encoding/binary"
 	"io"
 	"net"
+	"strings"
 )
 
 // SendStringTo takes a conn and a string and sends that string over the conn, prepending a uint64 of the size of the string.
 func SendStringTo(conn net.Conn, data string) (err error) {
+	data = strings.TrimSpace(data)
 	err = binary.Write(conn, binary.BigEndian, uint64(len(data)))
 	if err != nil {
 		return err
@@ -30,5 +32,6 @@ func RecvStringFrom(conn net.Conn) (data string, err error) {
 		return "", err
 	}
 
-	return string(dataBytes), nil
+	data = strings.TrimSpace(string(dataBytes))
+	return data, nil
 }
