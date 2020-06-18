@@ -45,6 +45,7 @@ These are almost all currently a WIP
 - [ ] Encrypted communication over TCP sockets using a shared key
 - [x] Safe error handling for client so it won't suddenly drop on error
 - [x] Reverse shell
+  - Note: This is not a full reverse shell, it is essentially executing commands in a loop instead of entering a shell process
 - [ ] System information dump
 - [ ] Screen grab
 - [ ] File grab

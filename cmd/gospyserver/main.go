@@ -6,7 +6,6 @@ import (
 	"github.com/c-bata/go-prompt"
 	"github.com/psidex/GoSpy/internal/gospyserver/client"
 	"github.com/psidex/GoSpy/internal/gospyserver/serverprompt"
-	"log"
 	"os"
 	"strings"
 )
@@ -59,7 +58,8 @@ func main() {
 	var err error // So we don't assign a local spyClient using := below.
 	spyClient, err = client.GetGoSpyClient(address)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Error when client tried to connect: %e\n", err)
+		os.Exit(0)
 	}
 
 	fmt.Println("Successful connection")
