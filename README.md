@@ -41,8 +41,9 @@ your machine to interact with it.
 These are almost all currently a WIP
 
 - [x] Cross-platform with `CGO_ENABLED=0` (compiles to any target that Go supports)
-- [x] Basic communication over TCP sockets
-- [ ] Encrypted communication over TCP sockets using a shared key
+- [x] Basic plaintext communication over TCP sockets
+- [x] AES-256 encrypted communication over TCP sockets using a shared password
+  - Note: This will cause a noticeable increase in response times
 - [x] Safe error handling for client so it won't suddenly drop on error
 - [x] Reverse shell
   - Note: This is not a full reverse shell, it is executing commands in a shell on the target and then returning their
@@ -55,7 +56,7 @@ These are almost all currently a WIP
 
 ## Screenshot
 
-<img src="./demo.png" />
+![](./demo.png)
 
 ## Why?
 
@@ -64,6 +65,6 @@ unit for my university course and am interested in learning more.
 
 ## Credits
 
-Icon from https://gopherize.me/
-
-https://github.com/c-bata/go-prompt
+- Icon from [gopherize.me](https://gopherize.me/)
+- [go-prompt](https://github.com/c-bata/go-prompt/) for the interactive prompt on the server
+- [JP Bruins Slot](https://itnext.io/encrypt-data-with-a-password-in-go-b5366384e291) for most of the encryption code

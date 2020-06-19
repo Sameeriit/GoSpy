@@ -54,12 +54,18 @@ func executor(spyClient *client.GoSpyClient, in string) {
 func main() {
 	fmt.Printf("%s\n\n", banner)
 
-	bindAddr := *flag.String("b", "0.0.0.0:12345", "the address (ip:port) to bind the gospyserver to")
+	bindAddr := flag.String("b", "0.0.0.0:12345", "the address (ip:port) to bind the gospyserver to")
+	password := flag.String("p", "", "the password to encrypt network data with")
+	flag.Parse()
 
-	fmt.Printf("Listening on %s\n", bindAddr)
+	fmt.Printf("Listening on %s\n", *bindAddr)
+	if *password != "" {
+		fmt.Println("Password supplied, using encrypted connection")
+	}
+
 	fmt.Println("Waiting for connection from GoSpy client...")
 
-	spyClient := client.NewGoSpyClient(bindAddr)
+	spyClient := client.NewGoSpyClient(*bindAddr, *password)
 	err := spyClient.WaitForConn()
 	if err != nil {
 		fmt.Printf("Error listening on given address: %s\n", err.Error())

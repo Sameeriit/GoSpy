@@ -11,28 +11,33 @@ import (
 
 // GoSpyClient represents a GoSpy client that is connected to this server.
 type GoSpyClient struct {
-	conn        net.Conn // The instantiated connection to the client.
-	bindAddress string   // The address to listen on for the inbound client connection.
+	cm          comms.PacketManager // The manager for the connection to the client.
+	password    string              // The password for a secure connection.
+	bindAddress string              // The address to listen on for the inbound client connection.
 }
 
 // NewGoSpyClient creates instantiates a GoSpyClient.
-func NewGoSpyClient(bindAddress string) (client GoSpyClient) {
-	return GoSpyClient{bindAddress: bindAddress}
+func NewGoSpyClient(bindAddress string, password string) (client GoSpyClient) {
+	return GoSpyClient{bindAddress: bindAddress, password: password}
 }
 
 // sendString sends a string to the client.
 func (c GoSpyClient) sendString(message string) (err error) {
-	return comms.SendStringTo(c.conn, message)
+	return c.cm.SendBytes([]byte(message))
 }
 
 // recvString receives a string from the client.
 func (c GoSpyClient) recvString() (message string, err error) {
-	return comms.RecvStringFrom(c.conn)
+	data, err := c.cm.RecvBytes()
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
 }
 
 // CloseConn closes the conn.
 func (c GoSpyClient) CloseConn() (err error) {
-	return c.conn.Close()
+	return c.cm.Close()
 }
 
 // WaitForConn starts a tcp server and waits for a single successful connection.
@@ -46,7 +51,11 @@ func (c *GoSpyClient) WaitForConn() (err error) {
 	for {
 		conn, err := l.Accept()
 		if err == nil {
-			c.conn = conn
+			if c.password != "" {
+				c.cm = comms.NewEncryptedConn(conn, c.password)
+			} else {
+				c.cm = comms.NewPlainConn(conn)
+			}
 			return nil
 		}
 	}
