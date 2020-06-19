@@ -5,7 +5,7 @@ import "github.com/c-bata/go-prompt"
 var suggestions = []prompt.Suggest{
 	{"ping", "Ping the connected client"},
 	{"reverse-shell", "Initiate a reverse shell"},
-	{"exit", "Exit GoSpyServer"},
+	{"exit", "Exit GoSpy Server"},
 }
 
 // Completer is the completer function for the go-prompt prompt used by GoSpyServer.

@@ -77,6 +77,8 @@ func (c GoSpyClient) EnterReverseShellRepl() (err error) {
 		return err
 	}
 
+	fmt.Println("Type `exit` to leave shell")
+
 	for {
 		fmt.Print("\n$ ")
 
