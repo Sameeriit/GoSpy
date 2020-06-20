@@ -66,5 +66,5 @@ unit for my university course and am interested in learning more.
 ## Credits
 
 - Icon from [gopherize.me](https://gopherize.me/)
-- [go-prompt](https://github.com/c-bata/go-prompt/) for the interactive prompt on the server
+- [c-bata/go-prompt](https://github.com/c-bata/go-prompt/) for the interactive prompt on the server
 - [JP Bruins Slot](https://itnext.io/encrypt-data-with-a-password-in-go-b5366384e291) for most of the encryption code

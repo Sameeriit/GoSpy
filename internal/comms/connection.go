@@ -85,7 +85,7 @@ func sendBytesTo(conn net.Conn, data []byte) (err error) {
 	return err
 }
 
-// recvBytesFrom recieves a uint64 and then reads that many bytes into a slice and returns it.
+// recvBytesFrom receives a uint64 and then reads that many bytes into a slice and returns it.
 func recvBytesFrom(conn net.Conn) (data []byte, err error) {
 	var length int64
 	err = binary.Read(conn, binary.BigEndian, &length)
