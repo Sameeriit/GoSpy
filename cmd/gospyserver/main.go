@@ -28,6 +28,7 @@ func executor(spyClient *client.GoSpyClient, in string) {
 	switch blocks[0] {
 
 	case "exit":
+		_ = spyClient.CommandExit()
 		os.Exit(0)
 
 	case "ping":

@@ -66,6 +66,11 @@ func (c GoSpyClient) Close() (err error) {
 	return c.cm.Close()
 }
 
+// CommandExit sends a message to the client for it to stop.
+func (c GoSpyClient) CommandExit() error {
+	return c.sendString("exit")
+}
+
 // CommandPing sends a "ping" to the client and waits for a "pong".
 func (c GoSpyClient) CommandPing() (response string, err error) {
 	err = c.sendString("ping")
