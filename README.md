@@ -45,9 +45,8 @@ These are almost all currently a WIP
 - [x] AES-256 encrypted communication over TCP sockets using a shared password
   - Note: This will cause a noticeable increase in response times
 - [x] Safe error handling for client so it won't suddenly drop on error
+- [x] Automatic reconnect for both client and server
 - [x] Reverse shell
-  - Note: This is not a full reverse shell, it is executing commands in a shell on the target and then returning their
-  output, rather than streaming a full shell process
 - [ ] Screen grab
 - [ ] File grab
 - [ ] File drop
@@ -68,3 +67,4 @@ unit for my university course and am interested in learning more.
 - Icon from [gopherize.me](https://gopherize.me/)
 - [c-bata/go-prompt](https://github.com/c-bata/go-prompt/) for the interactive prompt on the server
 - [JP Bruins Slot](https://itnext.io/encrypt-data-with-a-password-in-go-b5366384e291) for most of the encryption code
+- [vfedoroff/go-netcat](https://github.com/vfedoroff/go-netcat/blob/master/main.go) for some of the reverse shell network logic

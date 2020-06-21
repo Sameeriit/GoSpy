@@ -3,7 +3,7 @@ package serverprompt
 import "github.com/c-bata/go-prompt"
 
 var suggestions = []prompt.Suggest{
-	{"ping", "Ping the connected client"},
+	{"ping", "CommandPing the connected client"},
 	{"reverse-shell", "Initiate a reverse shell"},
 	{"exit", "Exit GoSpy Server"},
 }

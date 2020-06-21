@@ -6,8 +6,8 @@ import (
 	"net"
 )
 
-// PacketManager defines an interface for sending and receiving "packets" of bytes over a net.Conn TCP connection.
-type PacketManager interface {
+// ConnectionManager defines an interface for sending and receiving "packets" of bytes over a net.Conn TCP connection.
+type ConnectionManager interface {
 	SendBytes([]byte) error
 	RecvBytes() ([]byte, error)
 	Close() error

