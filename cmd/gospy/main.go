@@ -54,7 +54,7 @@ func main() {
 	serverAddress = *address
 	serverPassword = *password
 
-	if serverAddress != "" {
+	if serverPassword != "" {
 		log.Println("Password supplied, using encrypted connection")
 	}
 
@@ -74,7 +74,11 @@ func main() {
 			cm = comms.NewPlainConn(conn)
 		}
 
+		log.Println("Successful connection")
+
 		err = commandLoop(cm)
+		_ = cm.Close() // Just in case.
+
 		log.Printf("Connection dropped: %s\n", err.Error())
 	}
 }

@@ -44,7 +44,7 @@ These are almost all currently a WIP
 - [x] Basic plaintext communication over TCP sockets
 - [x] AES-256 encrypted communication over TCP sockets using a shared password
   - Note: This will cause a noticeable increase in response times
-- [x] Safe error handling for client so it won't suddenly drop on error
+- [x] Safe error handling so the client / server won't suddenly drop on error
 - [x] Automatic reconnect for both client and server
 - [x] Reverse shell
 - [ ] Screen grab
