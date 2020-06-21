@@ -56,9 +56,8 @@ func (c GoSpyClient) WaitForConnection() comms.ConnectionManager {
 		}
 		if c.passwordStr != "" {
 			return comms.NewEncryptedConn(conn, c.passwordStr)
-		} else {
-			return comms.NewPlainConn(conn)
 		}
+		return comms.NewPlainConn(conn)
 	}
 }
 
