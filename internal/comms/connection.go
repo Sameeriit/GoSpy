@@ -6,25 +6,25 @@ import (
 	"net"
 )
 
-// ConnectionManager defines an interface for sending and receiving "packets" of bytes over a net.Conn TCP connection.
-type ConnectionManager interface {
+// Connection defines an interface for sending and receiving "packets" of bytes over a net.Conn TCP connection.
+type Connection interface {
 	SendBytes([]byte) error
 	RecvBytes() ([]byte, error)
 	Close() error
 }
 
-// PlainConn is a plaintext connection manager.
-type PlainConn struct {
+// PlainConnection is a plaintext connection.
+type PlainConnection struct {
 	conn net.Conn
 }
 
-// NewPlainConn instantiates a new PlainConn.
-func NewPlainConn(conn net.Conn) PlainConn {
-	return PlainConn{conn}
+// NewPlainConn instantiates a new PlainConnection.
+func NewPlainConn(conn net.Conn) PlainConnection {
+	return PlainConnection{conn}
 }
 
 // SendBytes sends a slice of bytes over the connection.
-func (c PlainConn) SendBytes(data []byte) (err error) {
+func (c PlainConnection) SendBytes(data []byte) (err error) {
 	err = binary.Write(c.conn, binary.BigEndian, uint64(len(data)))
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func (c PlainConn) SendBytes(data []byte) (err error) {
 }
 
 // RecvBytes receives a slice of bytes over the connection that was sent by SendBytes.
-func (c PlainConn) RecvBytes() (data []byte, err error) {
+func (c PlainConnection) RecvBytes() (data []byte, err error) {
 	var length int64
 	err = binary.Read(c.conn, binary.BigEndian, &length)
 	if err != nil {
@@ -51,34 +51,34 @@ func (c PlainConn) RecvBytes() (data []byte, err error) {
 }
 
 // Close closes the connection.
-func (c PlainConn) Close() error {
+func (c PlainConnection) Close() error {
 	return c.conn.Close()
 }
 
-// EncryptedConn is a connection manager that encrypts its packets using a provided byteEncryptor.
-type EncryptedConn struct {
-	PlainConn
+// EncryptedConnection is a connection that encrypts its packets using a byteEncryptor.
+type EncryptedConnection struct {
+	PlainConnection
 	be byteEncryptor
 }
 
-// NewEncryptedConn instantiates a new EncryptedConn.
-func NewEncryptedConn(conn net.Conn, password string) EncryptedConn {
+// NewEncryptedConn instantiates a new EncryptedConnection.
+func NewEncryptedConn(conn net.Conn, password string) EncryptedConnection {
 	be := newByteEncryptor(password)
-	return EncryptedConn{PlainConn{conn}, be}
+	return EncryptedConnection{PlainConnection{conn}, be}
 }
 
-// SendBytes encrypts data and then sends its using PlainConn.SendBytes.
-func (c EncryptedConn) SendBytes(data []byte) (err error) {
+// SendBytes encrypts data and then sends its using PlainConnection.SendBytes.
+func (c EncryptedConnection) SendBytes(data []byte) (err error) {
 	encrypted, err := c.be.Encrypt(data)
 	if err != nil {
 		return err
 	}
-	return c.PlainConn.SendBytes(encrypted)
+	return c.PlainConnection.SendBytes(encrypted)
 }
 
-// RecvBytes receives bytes using PlainConn.RecvBytes and then decrypts them.
-func (c EncryptedConn) RecvBytes() (data []byte, err error) {
-	encryptedBytes, err := c.PlainConn.RecvBytes()
+// RecvBytes receives bytes using PlainConnection.RecvBytes and then decrypts them.
+func (c EncryptedConnection) RecvBytes() (data []byte, err error) {
+	encryptedBytes, err := c.PlainConnection.RecvBytes()
 	if err != nil {
 		return nil, err
 	}

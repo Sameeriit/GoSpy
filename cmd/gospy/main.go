@@ -15,10 +15,10 @@ var serverPassword string
 
 // commandLoop is the loop that receives commands and executes them.
 // This should only return an err has occurred and it is impossible to continue as is (i.e. network dropped).
-func commandLoop(cm comms.ConnectionManager) (err error) {
+func commandLoop(c comms.Connection) (err error) {
 	for {
 		var messageBytes []byte
-		messageBytes, err = cm.RecvBytes()
+		messageBytes, err = c.RecvBytes()
 		if err != nil {
 			break
 		}
@@ -33,7 +33,7 @@ func commandLoop(cm comms.ConnectionManager) (err error) {
 			os.Exit(0)
 
 		case "ping":
-			if commands.SendPong(cm) != nil {
+			if commands.SendPong(c) != nil {
 				break
 			}
 
@@ -66,18 +66,18 @@ func main() {
 			continue
 		}
 
-		var cm comms.ConnectionManager
+		var c comms.Connection
 
 		if serverPassword != "" {
-			cm = comms.NewEncryptedConn(conn, serverPassword)
+			c = comms.NewEncryptedConn(conn, serverPassword)
 		} else {
-			cm = comms.NewPlainConn(conn)
+			c = comms.NewPlainConn(conn)
 		}
 
 		log.Println("Successful connection")
 
-		err = commandLoop(cm)
-		_ = cm.Close() // Just in case.
+		err = commandLoop(c)
+		_ = c.Close() // Just in case.
 
 		log.Printf("Connection dropped: %s\n", err.Error())
 	}
