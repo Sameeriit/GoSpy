@@ -17,9 +17,9 @@ func StartReverseShell(address, password string) {
 
 	var c comms.Connection
 	if password != "" {
-		c = comms.NewEncryptedConn(conn, password)
+		c = comms.NewEncryptedConnection(conn, password)
 	} else {
-		c = comms.NewPlainConn(conn)
+		c = comms.NewPlainConnection(conn)
 	}
 	defer c.Close()
 

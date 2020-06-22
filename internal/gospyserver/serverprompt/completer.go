@@ -1,6 +1,8 @@
 package serverprompt
 
-import "github.com/c-bata/go-prompt"
+import (
+	"github.com/c-bata/go-prompt"
+)
 
 var suggestions = []prompt.Suggest{
 	{"ping", "CommandPing the connected client"},
@@ -8,7 +10,7 @@ var suggestions = []prompt.Suggest{
 	{"exit", "Tell the GoSpy client to exit then and exit the GoSpy Server"},
 }
 
-// Completer is the completer function for the go-prompt prompt used by GoSpyServer.
+// Completer is the completer function for the go-prompt prompt.
 func Completer(in prompt.Document) []prompt.Suggest {
 	w := in.GetWordBeforeCursor()
 	if w == "" {

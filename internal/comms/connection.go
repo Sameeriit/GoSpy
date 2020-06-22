@@ -18,8 +18,8 @@ type PlainConnection struct {
 	conn net.Conn
 }
 
-// NewPlainConn instantiates a new PlainConnection.
-func NewPlainConn(conn net.Conn) PlainConnection {
+// NewPlainConnection instantiates a new PlainConnection.
+func NewPlainConnection(conn net.Conn) PlainConnection {
 	return PlainConnection{conn}
 }
 
@@ -61,8 +61,8 @@ type EncryptedConnection struct {
 	be byteEncryptor
 }
 
-// NewEncryptedConn instantiates a new EncryptedConnection.
-func NewEncryptedConn(conn net.Conn, password string) EncryptedConnection {
+// NewEncryptedConnection instantiates a new EncryptedConnection.
+func NewEncryptedConnection(conn net.Conn, password string) EncryptedConnection {
 	be := newByteEncryptor(password)
 	return EncryptedConnection{PlainConnection{conn}, be}
 }
