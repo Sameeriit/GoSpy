@@ -21,7 +21,7 @@
     </a>
 </p>
 
-<p align="center">A cross-platform post-exploitation tool for penetration testing</p>
+<p align="center">A cross-platform remote access tool</p>
 
 ## Disclaimer
 
