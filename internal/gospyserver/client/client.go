@@ -90,7 +90,7 @@ func (c GoSpyClient) CommandReverseShell() (err error) {
 	cm := c.WaitForConnection()
 
 	fmt.Println("Type `exit` to leave the shell at any time")
-	_ = comms.BridgeCMToWriter(cm, os.Stdout)
+	_ = comms.BridgeConnectionManagerToWriter(cm, os.Stdout)
 
 	for {
 		reader := bufio.NewReader(os.Stdin)

