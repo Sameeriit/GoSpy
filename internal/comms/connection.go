@@ -10,6 +10,7 @@ import (
 type Connection interface {
 	SendBytes([]byte) error
 	RecvBytes() ([]byte, error)
+	GetRemoteAddr() string
 	Close() error
 }
 
@@ -50,6 +51,11 @@ func (c PlainConnection) RecvBytes() (data []byte, err error) {
 	return data, nil
 }
 
+// GetRemoteAddr returns the address of the remote connection as a string ("192.0.2.1:25", "[2001:db8::1]:80", etc.).
+func (c PlainConnection) GetRemoteAddr() string {
+	return c.conn.RemoteAddr().String()
+}
+
 // Close closes the connection.
 func (c PlainConnection) Close() error {
 	return c.conn.Close()
@@ -68,7 +74,7 @@ func NewEncryptedConnection(conn net.Conn, password string) EncryptedConnection 
 }
 
 // SendBytes encrypts data and then sends its using PlainConnection.SendBytes.
-func (c EncryptedConnection) SendBytes(data []byte) (err error) {
+func (c EncryptedConnection) SendBytes(data []byte) error {
 	encrypted, err := c.be.Encrypt(data)
 	if err != nil {
 		return err
@@ -89,4 +95,9 @@ func (c EncryptedConnection) RecvBytes() (data []byte, err error) {
 	}
 
 	return data, nil
+}
+
+// GetPassword returns the password used for encrypting the connection.
+func (c EncryptedConnection) GetPassword() string {
+	return string(c.be.passwordBytes)
 }

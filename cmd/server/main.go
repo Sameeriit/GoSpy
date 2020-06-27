@@ -4,8 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/c-bata/go-prompt"
-	"github.com/psidex/GoSpy/internal/gospyserver/client"
-	"github.com/psidex/GoSpy/internal/gospyserver/serverprompt"
+	"github.com/psidex/GoSpy/internal/server"
+	"github.com/psidex/GoSpy/internal/server/serverprompt"
 	"os"
 )
 
@@ -27,19 +27,18 @@ func main() {
 	if *password != "" {
 		fmt.Println("Password supplied, using encrypted connection")
 	}
-
 	fmt.Println("Waiting for connection from GoSpy client...")
 
-	spyClient, err := client.NewGoSpyClient(*bindAddr, *password)
+	man, err := server.NewConMan(*bindAddr, *password)
 	if err != nil {
-		fmt.Printf("Error listening for client: %s\n", err.Error())
+		fmt.Printf("Error binding listener: %s\n", err.Error())
 		os.Exit(1)
 	}
-
 	fmt.Println("Successful connection from client")
+
 	prompt.New(
-		func(in string) { serverprompt.Executor(spyClient, in) },
+		func(in string) { serverprompt.Executor(&man, in) },
 		serverprompt.Completer,
-		prompt.OptionTitle("GoSpy Server"),
+		prompt.OptionTitle("GoSpy ConMan"),
 	).Run()
 }

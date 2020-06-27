@@ -2,7 +2,8 @@ package serverprompt
 
 import (
 	"fmt"
-	"github.com/psidex/GoSpy/internal/gospyserver/client"
+	"github.com/psidex/GoSpy/internal/commands"
+	"github.com/psidex/GoSpy/internal/server"
 	"io"
 	"net"
 	"os"
@@ -10,7 +11,8 @@ import (
 )
 
 // Executor is the executor function for the go-prompt prompt.
-func Executor(spyClient client.GoSpyClient, in string) {
+// The instantiated ConMan is passed as a pointer to its fields can be changed.
+func Executor(s *server.ConMan, in string) {
 	in = strings.TrimSpace(in)
 	blocks := strings.Split(in, " ")
 
@@ -19,30 +21,28 @@ func Executor(spyClient client.GoSpyClient, in string) {
 	switch blocks[0] {
 
 	case "exit":
-		_ = spyClient.CommandExit()
+		_ = commands.ExitSend(s.Conn)
 		os.Exit(0)
 
 	case "ping":
-		var resp string
-		resp, err = spyClient.CommandPing()
+		err = commands.PingSend(s.Conn)
 		if err != nil {
-			fmt.Printf("CommandPing error: %s\n", err.Error())
+			fmt.Printf("ping error: %s\n", err.Error())
 			break
 		}
-		fmt.Printf("Recv: %s\n", resp)
 
 	case "reverse-shell":
-		err = spyClient.CommandReverseShell()
+		err = commands.ReverseShellSend(*s)
 		if err != nil {
-			fmt.Printf("Reverse shell error: %s\n", err.Error())
+			fmt.Printf("reverse-shell error: %s\n", err.Error())
 		}
 
 	}
 
 	if _, isNetErr := err.(net.Error); isNetErr == true || err == io.EOF {
 		fmt.Println("\nNetwork error detected, dropping client and waiting for reconnect...")
-		_ = spyClient.Close()
-		spyClient.WaitForClient()
+		_ = s.Conn.Close()
+		s.Conn = s.WaitForConnection()
 		fmt.Println("Successful reconnect from client")
 	}
 }
