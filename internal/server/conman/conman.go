@@ -1,14 +1,14 @@
-package server
+package conman
 
 import (
 	"github.com/psidex/GoSpy/internal/comms"
 	"net"
 )
 
-// ConMan is a manager for handling connections to the server from the client.
+// ConMan is a connection manager for handling connections to and from the client.
 type ConMan struct {
 	listener net.Listener     // The listener for connections from the client.
-	CmdCon   comms.Connection // The connection to the client that deals with exchanging commands.
+	CmdCon   comms.Connection // The connection to the client that exchanges commands and replies.
 	pwdStr   string           // The password for encrypting data over all connections.
 }
 

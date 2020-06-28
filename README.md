@@ -33,8 +33,8 @@ Authors assume no liability and are not responsible for any misuse or damage cau
 
 ## Usage
 
-GoSpy consists of 2 binaries, `gospy` is what you execute on your target machine and `gospyserver` is what you run on
-your machine to interact with it.
+GoSpy consists of 2 binaries, the client is what you execute on your target machine and the server is what you run on
+your machine to interact with the client.
 
 ## Features
 
@@ -47,9 +47,9 @@ These are almost all currently a WIP
 - [x] Safe error handling so the client / server won't suddenly drop on error
 - [x] Automatic reconnect for both client and server
 - [x] Reverse shell
-- [ ] Screen grab
 - [ ] File grab
 - [ ] File drop
+- [ ] Screen grab
 - [ ] Execute Lua scripts on target machine (using [gopher-lua](https://github.com/yuin/gopher-lua))
 - [ ] More?
 

@@ -1,9 +1,9 @@
-package serverprompt
+package server
 
 import (
 	"fmt"
 	"github.com/psidex/GoSpy/internal/commands"
-	"github.com/psidex/GoSpy/internal/server"
+	"github.com/psidex/GoSpy/internal/server/conman"
 	"io"
 	"net"
 	"os"
@@ -12,7 +12,7 @@ import (
 
 // Executor is the executor function for the go-prompt prompt.
 // The instantiated ConMan is passed as a pointer to its fields can be changed.
-func Executor(s *server.ConMan, in string) {
+func Executor(s *conman.ConMan, in string) {
 	in = strings.TrimSpace(in)
 	blocks := strings.Split(in, " ")
 

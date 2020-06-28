@@ -1,4 +1,4 @@
-package serverprompt
+package server
 
 import (
 	"github.com/c-bata/go-prompt"

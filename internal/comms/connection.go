@@ -7,11 +7,12 @@ import (
 )
 
 // Connection defines an interface for sending and receiving "packets" of bytes over a net.CmdCon TCP connection.
+// Can't implement reader because might receive more data than buffer (e.g. passing a 1 byte buf but receiving "ping")
 type Connection interface {
+	io.WriteCloser
 	SendBytes([]byte) error
 	RecvBytes() ([]byte, error)
 	GetRemoteAddr() string
-	Close() error
 }
 
 // PlainConnection is a plaintext connection.
@@ -22,6 +23,11 @@ type PlainConnection struct {
 // NewPlainConnection instantiates a new PlainConnection.
 func NewPlainConnection(conn net.Conn) PlainConnection {
 	return PlainConnection{conn}
+}
+
+// Write implements the io.Writer interface, actually just calls SendBytes.
+func (c PlainConnection) Write(buf []byte) (n int, err error) {
+	return len(buf), c.SendBytes(buf)
 }
 
 // SendBytes sends a slice of bytes over the connection.
@@ -71,6 +77,11 @@ type EncryptedConnection struct {
 func NewEncryptedConnection(conn net.Conn, password string) EncryptedConnection {
 	be := newByteEncryptor(password)
 	return EncryptedConnection{PlainConnection{conn}, be}
+}
+
+// Write implements the io.Writer interface, actually just calls SendBytes.
+func (c EncryptedConnection) Write(buf []byte) (n int, err error) {
+	return len(buf), c.SendBytes(buf)
 }
 
 // SendBytes encrypts data and then sends its using PlainConnection.SendBytes.

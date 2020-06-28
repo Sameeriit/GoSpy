@@ -2,6 +2,7 @@ package commands
 
 import (
 	"errors"
+	"fmt"
 	"github.com/psidex/GoSpy/internal/comms"
 )
 
@@ -25,5 +26,6 @@ func PingSend(c comms.Connection) (err error) {
 		return errors.New("did not receive \"pong\"")
 	}
 
+	fmt.Println("Received pong")
 	return nil
 }
