@@ -4,8 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/c-bata/go-prompt"
-	"github.com/psidex/GoSpy/internal/server"
 	"github.com/psidex/GoSpy/internal/server/conman"
+	"github.com/psidex/GoSpy/internal/server/serverprompt"
 	"os"
 )
 
@@ -38,8 +38,8 @@ func main() {
 	fmt.Println("Successful connection from client")
 
 	prompt.New(
-		func(in string) { server.Executor(&man, in) },
-		server.Completer,
+		func(in string) { serverprompt.Executor(&man, in) },
+		serverprompt.Completer,
 		prompt.OptionTitle("GoSpy ConMan"),
 	).Run()
 }
