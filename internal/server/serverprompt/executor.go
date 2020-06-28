@@ -21,11 +21,11 @@ func Executor(s *server.ConMan, in string) {
 	switch blocks[0] {
 
 	case "exit":
-		_ = commands.ExitSend(s.Conn)
+		_ = commands.ExitSend(s.CmdCon)
 		os.Exit(0)
 
 	case "ping":
-		err = commands.PingSend(s.Conn)
+		err = commands.PingSend(s.CmdCon)
 		if err != nil {
 			fmt.Printf("ping error: %s\n", err.Error())
 			break
@@ -41,8 +41,8 @@ func Executor(s *server.ConMan, in string) {
 
 	if _, isNetErr := err.(net.Error); isNetErr == true || err == io.EOF {
 		fmt.Println("\nNetwork error detected, dropping client and waiting for reconnect...")
-		_ = s.Conn.Close()
-		s.Conn = s.WaitForConnection()
+		_ = s.CmdCon.Close()
+		s.CmdCon = s.WaitForNewConnection()
 		fmt.Println("Successful reconnect from client")
 	}
 }

@@ -76,12 +76,12 @@ func ReverseShellReply(c comms.Connection) error {
 }
 
 func ReverseShellSend(man server.ConMan) (err error) {
-	err = man.Conn.SendBytes([]byte("reverse-shell"))
+	err = man.CmdCon.SendBytes([]byte("reverse-shell"))
 	if err != nil {
 		return err
 	}
 
-	reverseShellConnection := man.WaitForConnection()
+	reverseShellConnection := man.WaitForNewConnection()
 
 	fmt.Println("Type `exit` to leave the shell at any time")
 	_ = comms.BridgeConnectionToWriter(reverseShellConnection, os.Stdout)

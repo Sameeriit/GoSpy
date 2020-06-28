@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-// Connection defines an interface for sending and receiving "packets" of bytes over a net.Conn TCP connection.
+// Connection defines an interface for sending and receiving "packets" of bytes over a net.CmdCon TCP connection.
 type Connection interface {
 	SendBytes([]byte) error
 	RecvBytes() ([]byte, error)
