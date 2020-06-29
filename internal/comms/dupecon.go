@@ -1,22 +1,12 @@
 package comms
 
-import (
-	"net"
-)
+import "net"
 
-// DupeCon takes a connection (c) and creates a new connection to the remote address of c, re-using the password if it
-// was encrypted.
+// DupeCon takes a connection (c) and creates and returns a new connection to the remote address of c.
 func DupeCon(c Connection) (newCon Connection, err error) {
 	conn, err := net.Dial("tcp", c.GetRemoteAddr())
 	if err != nil {
-		return nil, err
+		return Connection{}, err
 	}
-
-	if ec, ok := c.(EncryptedConnection); ok == true {
-		newCon = NewEncryptedConnection(conn, ec.GetPassword())
-	} else {
-		newCon = NewPlainConnection(conn)
-	}
-
-	return newCon, nil
+	return NewConnection(conn), nil
 }

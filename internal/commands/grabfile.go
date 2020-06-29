@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-// GrabFileReply sends the selected file over the network to the server.
+// GrabFileReply sends the selected file over the network to the server. Always uses plaintext connection.
 func GrabFileReply(c comms.Connection, localFilePath string) error {
 	// The new connection is created first so if the client or server has a file open/r/w err the connection is closed
 	// which signifies to the other process to not continue with the command. (same with GrabFileSend).
@@ -31,7 +31,8 @@ func GrabFileReply(c comms.Connection, localFilePath string) error {
 	return nil
 }
 
-// GrabFileSend requests a file on the client at src and writes it to dst on the current machine.
+// GrabFileSend requests a file on the client at src and writes it to dst on the current machine. Always uses plaintext
+// connection.
 func GrabFileSend(man conman.ConMan, src, dst string) (err error) {
 	fullCommand := fmt.Sprintf("grab-file %s", src)
 	if err = man.CmdCon.SendBytes([]byte(fullCommand)); err != nil {

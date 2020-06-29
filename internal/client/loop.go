@@ -22,11 +22,11 @@ func CommandLoop(c comms.Connection) (err error) {
 		log.Printf("Recv: %s", message)
 
 		args := strings.Split(message, " ")
-
 		switch args[0] {
 
 		case "exit":
 			log.Println("Exiting")
+			_ = c.Close()
 			os.Exit(0)
 
 		case "ping":

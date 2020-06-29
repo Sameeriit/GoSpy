@@ -42,19 +42,15 @@ These are almost all currently a WIP
 
 - [x] Cross-platform with `CGO_ENABLED=0` (compiles to any target that Go supports)
 - [x] Basic plaintext communication over TCP sockets
-- [x] AES-256 encrypted communication over TCP sockets using a shared password
-  - Note: Using an encrypted connection with this method will cause a noticeable increase in response times
 - [x] Safe error handling so the client / server won't suddenly drop on error
 - [x] Automatic reconnect for both client and server
 - [x] Reverse shell
 - [x] File grab
-  - This is currently only supported using the current connection type (e.g. if using an encrypted connection the file
-  will be encrypted for the transfer). This could cause a big slow down for large files, so I'm going to add the option
-  to be able to choose plaintext transfer even if you're using an encrypted connection.
 - [ ] File drop
 - [ ] Screen grab
 - [ ] Execute Lua scripts on target machine (using [gopher-lua](https://github.com/yuin/gopher-lua))
 - [ ] More?
+- [ ] SSL/TLS?
 
 ## Screenshot
 

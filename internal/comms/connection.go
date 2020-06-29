@@ -6,32 +6,23 @@ import (
 	"net"
 )
 
-// Connection defines an interface for sending and receiving "packets" of bytes over a net.Conn TCP connection.
-// Can't implement reader because might receive more data than buffer (e.g. passing a 1 byte buf but receiving "ping")
-type Connection interface {
-	io.WriteCloser
-	SendBytes([]byte) error
-	RecvBytes() ([]byte, error)
-	GetRemoteAddr() string
-}
-
-// PlainConnection is a plaintext connection.
-type PlainConnection struct {
+// Connection is for sending and receiving "packets" of bytes over a net.Conn TCP connection.
+type Connection struct {
 	conn net.Conn
 }
 
-// NewPlainConnection instantiates a new PlainConnection.
-func NewPlainConnection(conn net.Conn) PlainConnection {
-	return PlainConnection{conn}
+// NewConnection instantiates a new Connection.
+func NewConnection(conn net.Conn) Connection {
+	return Connection{conn}
 }
 
 // Write implements the io.Writer interface, actually just calls SendBytes.
-func (c PlainConnection) Write(buf []byte) (n int, err error) {
+func (c Connection) Write(buf []byte) (n int, err error) {
 	return len(buf), c.SendBytes(buf)
 }
 
 // SendBytes sends a slice of bytes over the connection.
-func (c PlainConnection) SendBytes(data []byte) (err error) {
+func (c Connection) SendBytes(data []byte) (err error) {
 	err = binary.Write(c.conn, binary.BigEndian, uint64(len(data)))
 	if err != nil {
 		return err
@@ -41,7 +32,7 @@ func (c PlainConnection) SendBytes(data []byte) (err error) {
 }
 
 // RecvBytes receives a slice of bytes over the connection that was sent by SendBytes.
-func (c PlainConnection) RecvBytes() (data []byte, err error) {
+func (c Connection) RecvBytes() (data []byte, err error) {
 	var length int64
 	err = binary.Read(c.conn, binary.BigEndian, &length)
 	if err != nil {
@@ -58,57 +49,11 @@ func (c PlainConnection) RecvBytes() (data []byte, err error) {
 }
 
 // GetRemoteAddr returns the address of the remote connection as a string ("192.0.2.1:25", "[2001:db8::1]:80", etc.).
-func (c PlainConnection) GetRemoteAddr() string {
+func (c Connection) GetRemoteAddr() string {
 	return c.conn.RemoteAddr().String()
 }
 
 // Close closes the connection.
-func (c PlainConnection) Close() error {
+func (c Connection) Close() error {
 	return c.conn.Close()
-}
-
-// EncryptedConnection is a connection that encrypts its packets using a byteEncryptor.
-type EncryptedConnection struct {
-	PlainConnection
-	be byteEncryptor
-}
-
-// NewEncryptedConnection instantiates a new EncryptedConnection.
-func NewEncryptedConnection(conn net.Conn, password string) EncryptedConnection {
-	be := newByteEncryptor(password)
-	return EncryptedConnection{PlainConnection{conn}, be}
-}
-
-// Write implements the io.Writer interface, actually just calls SendBytes.
-func (c EncryptedConnection) Write(buf []byte) (n int, err error) {
-	return len(buf), c.SendBytes(buf)
-}
-
-// SendBytes encrypts data and then sends its using PlainConnection.SendBytes.
-func (c EncryptedConnection) SendBytes(data []byte) error {
-	encrypted, err := c.be.Encrypt(data)
-	if err != nil {
-		return err
-	}
-	return c.PlainConnection.SendBytes(encrypted)
-}
-
-// RecvBytes receives bytes using PlainConnection.RecvBytes and then decrypts them.
-func (c EncryptedConnection) RecvBytes() (data []byte, err error) {
-	encryptedBytes, err := c.PlainConnection.RecvBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	data, err = c.be.Decrypt(encryptedBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
-}
-
-// GetPassword returns the password used for encrypting the connection.
-func (c EncryptedConnection) GetPassword() string {
-	return string(c.be.passwordBytes)
 }

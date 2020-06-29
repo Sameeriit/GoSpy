@@ -88,7 +88,7 @@ func ReverseShellSend(man conman.ConMan) (err error) {
 		textBytes := []byte(text)
 		err = reverseShellConnection.SendBytes(textBytes)
 		if err != nil {
-			// Don't return the error because this is with the reverse shell connection, not with the original connection conn.
+			// Don't return the error because this is with the reverse shell connection, not with man.CmdCon.
 			fmt.Printf("Reverse shell connection error: %s\n", err.Error())
 			break
 		}

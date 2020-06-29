@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/psidex/GoSpy/internal/server/conman"
 	"github.com/psidex/GoSpy/internal/server/serverprompt"
-	"log"
 	"os"
 )
 
@@ -20,14 +19,9 @@ func main() {
 	fmt.Printf("%s\n\n", banner)
 
 	bindAddr := flag.String("a", "0.0.0.0:12345", "the address (ip:port) to bind the gospyserver to")
-	password := flag.String("p", "", "the password to encrypt network data with")
 	flag.Parse()
 
-	if *password != "" {
-		fmt.Println("Password supplied, using encrypted connection")
-	}
-
-	man, err := conman.NewConMan(*bindAddr, *password)
+	man, err := conman.NewConMan(*bindAddr)
 	if err != nil {
 		fmt.Printf("Error binding listener: %s\n", err.Error())
 		os.Exit(1)
@@ -40,6 +34,6 @@ func main() {
 		fmt.Println("Successful connection from client")
 		err = serverprompt.CommandLoop(man)
 		_ = man.CmdCon.Close()
-		log.Printf("Client connection dropped: %s\n", err.Error())
+		fmt.Printf("Client connection dropped: %s\n", err.Error())
 	}
 }

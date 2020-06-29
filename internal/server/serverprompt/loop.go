@@ -14,7 +14,7 @@ import (
 // This should only return an err has occurred and it is impossible to continue as is (i.e. network dropped).
 func CommandLoop(man conman.ConMan) (err error) {
 	for {
-		in := prompt.Input("> ", Completer)
+		in := prompt.Input("> ", completer)
 		in = strings.TrimSpace(in)
 		blocks := strings.Split(in, " ")
 
@@ -22,6 +22,7 @@ func CommandLoop(man conman.ConMan) (err error) {
 
 		case "exit":
 			_ = commands.ExitSend(man.CmdCon)
+			man.Stop()
 			os.Exit(0)
 
 		case "ping":
@@ -33,7 +34,7 @@ func CommandLoop(man conman.ConMan) (err error) {
 		case "grab-file":
 			// ToDo: Validate command (e.g. are there 2 paths supplied?)
 			// ToDo: How to support file path with spaces in?
-			// ToDo: Allow user to specify non-encrypted connection if using encrypted con.
+			// ToDo: What happens if user requests file that does not exist on client machine?
 			err = commands.GrabFileSend(man, blocks[1], blocks[2])
 
 		}
