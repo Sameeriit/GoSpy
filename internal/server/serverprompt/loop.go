@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"github.com/c-bata/go-prompt"
 	"github.com/psidex/GoSpy/internal/commands"
+	"github.com/psidex/GoSpy/internal/comms"
 	"github.com/psidex/GoSpy/internal/server/conman"
-	"io"
-	"net"
 	"os"
 	"strings"
 )
@@ -39,7 +38,7 @@ func CommandLoop(man conman.ConMan) (err error) {
 
 		}
 
-		if _, isNetErr := err.(net.Error); isNetErr == true || err == io.EOF {
+		if comms.IsConnectionError(err) {
 			break
 		}
 		if err != nil {

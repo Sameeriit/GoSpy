@@ -3,9 +3,7 @@ package client
 import (
 	"github.com/psidex/GoSpy/internal/commands"
 	"github.com/psidex/GoSpy/internal/comms"
-	"io"
 	"log"
-	"net"
 	"os"
 	"strings"
 )
@@ -43,7 +41,7 @@ func CommandLoop(c comms.Connection) (err error) {
 
 		}
 
-		if _, isNetErr := err.(net.Error); isNetErr == true || err == io.EOF {
+		if comms.IsConnectionError(err) {
 			break
 		}
 		if err != nil {
