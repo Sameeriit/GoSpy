@@ -13,6 +13,10 @@ func main() {
 	password := flag.String("p", "", "the password to encrypt network data with")
 	flag.Parse()
 
+	if *password != "" {
+		log.Println("Password supplied, using encrypted connection")
+	}
+
 	for {
 		log.Printf("Attempting connection to address: %s\n", *address)
 		conn, err := net.Dial("tcp", *address)
@@ -21,12 +25,9 @@ func main() {
 		}
 
 		var c comms.Connection
-
 		if *password != "" {
-			log.Println("Password supplied, using encrypted connection")
 			c = comms.NewEncryptedConnection(conn, *password)
 		} else {
-			log.Println("No password supplied, using plaintext connection")
 			c = comms.NewPlainConnection(conn)
 		}
 

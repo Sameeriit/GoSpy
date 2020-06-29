@@ -7,4 +7,4 @@ func ExitSend(c comms.Connection) error {
 	return c.SendBytes([]byte("exit"))
 }
 
-func ExitReply() {}
+// No need for ExitReply as the client just quits.

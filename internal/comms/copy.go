@@ -5,19 +5,18 @@ import (
 )
 
 // CopyFromConnection takes a Connection and reads bytes from it using RecvBytes, writing them to the io.Writer.
-// Stops when any read or write error occurs. Uses the returned channel to pass the error (or nil).
+// It does this copying in a goroutine and uses the returned channel to pass an error when it occurs.
+// The channel receiving an error (or nil) signifies the end of the goroutine.
 func CopyFromConnection(src Connection, dst io.Writer) <-chan error {
 	errChan := make(chan error)
 	go func() {
 		var err error
 		var readBytes []byte
 		for {
-			readBytes, err = src.RecvBytes()
-			if err != nil {
+			if readBytes, err = src.RecvBytes(); err != nil {
 				break
 			}
-			_, err = dst.Write(readBytes)
-			if err != nil {
+			if _, err = dst.Write(readBytes); err != nil {
 				break
 			}
 		}
@@ -27,7 +26,8 @@ func CopyFromConnection(src Connection, dst io.Writer) <-chan error {
 }
 
 // CopyToConnection takes a io.Reader and reads bytes from it, sending them to the Connection using SendBytes.
-// Stops when any read or write error occurs. Uses the returned channel to pass the error (or nil).
+// It does this copying in a goroutine and uses the returned channel to pass an error if it occurs.
+// The channel receiving an error (or nil) signifies the end of the goroutine.
 func CopyToConnection(src io.Reader, dst Connection) <-chan error {
 	errChan := make(chan error)
 	go func() {

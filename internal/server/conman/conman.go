@@ -19,11 +19,11 @@ func NewConMan(bindAddress, password string) (s ConMan, err error) {
 		return ConMan{}, err
 	}
 	s = ConMan{listener: l, pwdStr: password}
-	s.CmdCon = s.WaitForNewConnection()
 	return s, nil
 }
 
 // WaitForNewConnection waits for a successful connection to the listener and then sets up and returns a comms.Connection.
+// ToDo: Have a way of waiting for plainconn even if conman has password. Duplicate this todo for comms.DupeCon().
 func (m ConMan) WaitForNewConnection() comms.Connection {
 	for {
 		conn, err := m.listener.Accept()
