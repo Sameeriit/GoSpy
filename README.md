@@ -41,7 +41,6 @@ your machine to interact with the client.
 These are almost all currently a WIP
 
 - [x] Cross-platform with `CGO_ENABLED=0` (compiles to any target that Go supports)
-- [x] Basic plaintext communication over TCP sockets
 - [x] Safe error handling so the client / server won't suddenly drop on error
 - [x] Automatic reconnect for both client and server
 - [x] Reverse shell
@@ -69,15 +68,10 @@ arguments.
 Any other time data needs to be transferred, a new connection is initiated (e.g. when sending a file). This means
 that if anything goes wrong (e.g. a file read/write error) then the connection can just be closed instead of having
 to deal with complicated communication logic (e.g. letting the client know an error ocurred when it's trying to send
-file data). This also means that the user can decide if and when they want to use encryption (as using an encrypted
-connection can be very slow).
-
-This means that, for instance, the client can use the encrypted connection for interacting with a reverse shell, but if
-they want to transfer a large file, it's much faster to exchange that over a "plaintext" connection.
+file data).
 
 ## Credits
 
 - [gopherize.me](https://gopherize.me/) for the icon
 - [c-bata/go-prompt](https://github.com/c-bata/go-prompt/) for the interactive prompt on the server
-- [JP Bruins Slot](https://itnext.io/encrypt-data-with-a-password-in-go-b5366384e291) for most of the encryption code
 - [vfedoroff/go-netcat](https://github.com/vfedoroff/go-netcat/blob/master/main.go) for some reverse shell net logic
