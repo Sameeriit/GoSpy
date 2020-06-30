@@ -12,7 +12,7 @@ import (
 func GrabFileReply(c comms.Connection, localFilePath string) error {
 	// The new connection is created first so if the client or server has a file open/r/w err the connection is closed
 	// which signifies to the other process to not continue with the command. (same with GrabFileSend).
-	fileTransferCon, err := comms.DupeCon(c)
+	fileTransferCon, err := c.NewConnectionToRemote()
 	if err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func GrabFileSend(man conman.ConMan, src, dst string) (err error) {
 	}
 	defer fd.Close()
 
-	err = <-comms.CopyFromConnection(fileTransferCon, fd)
+	err = <-fileTransferCon.GoWriteTo(fd)
 
 	if err == io.EOF {
 		fmt.Println("File copy complete")

