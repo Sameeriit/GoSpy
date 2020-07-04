@@ -17,11 +17,9 @@ func PingSend(cmdCon comms.Connection) (err error) {
 		return err
 	}
 
-	var reply string
-	if reply, err = cmdCon.RecvString(); err != nil {
+	if reply, err := cmdCon.RecvString(); err != nil {
 		return err
-	}
-	if reply != "pong" {
+	} else if reply != "pong" {
 		return errors.New("did not receive \"pong\"")
 	}
 
