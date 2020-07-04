@@ -18,10 +18,11 @@ func main() {
 		if err != nil {
 			continue
 		}
-		c := comms.NewConnection(conn)
+		// The connection to the server for exchanging command data (similar to CmdCon in server conman).
+		cmdCon := comms.NewConnection(conn)
 		log.Println("Successful connection")
-		err = client.CommandLoop(c)
-		_ = c.Close()
+		err = client.CommandLoop(cmdCon)
+		_ = cmdCon.Close()
 		log.Printf("Connection dropped: %s\n", err.Error())
 	}
 }

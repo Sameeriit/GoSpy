@@ -30,7 +30,7 @@ func main() {
 	fmt.Printf("Type `exit` or `Ctrl-C` to exit\nListening on %s\n", *bindAddr)
 	for {
 		fmt.Println("Waiting for connection from GoSpy client...")
-		man.CmdCon = man.WaitForNewConnection()
+		man.AcceptCmdCon()
 		fmt.Println("Successful connection from client")
 		err = serverprompt.CommandLoop(man)
 		_ = man.CmdCon.Close()

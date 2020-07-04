@@ -7,22 +7,21 @@ import (
 )
 
 // PingReply sends "pong" to the given connection.
-func PingReply(c comms.Connection) error {
-	return c.SendBytes([]byte("pong"))
+func PingReply(cmdCon comms.Connection) error {
+	return cmdCon.SendString("pong")
 }
 
 // PingSend sends a ping request to the connection and waits for a pong reply.
-func PingSend(c comms.Connection) (err error) {
-	if err = c.SendBytes([]byte("ping")); err != nil {
+func PingSend(cmdCon comms.Connection) (err error) {
+	if err = cmdCon.SendString("ping"); err != nil {
 		return err
 	}
 
-	var reply []byte
-	if reply, err = c.RecvBytes(); err != nil {
+	var reply string
+	if reply, err = cmdCon.RecvString(); err != nil {
 		return err
 	}
-
-	if string(reply) != "pong" {
+	if reply != "pong" {
 		return errors.New("did not receive \"pong\"")
 	}
 

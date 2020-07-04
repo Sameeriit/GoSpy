@@ -5,14 +5,14 @@ import (
 	"net"
 )
 
-// ConMan is a connection manager for handling connections to and from the client.
+// ConMan is a connection manager for handling connections to/from the client.
 type ConMan struct {
 	listener net.Listener     // The listener for connections from the client.
-	CmdCon   comms.Connection // The connection to the client that exchanges commands and replies.
+	CmdCon   comms.Connection // The connection to the client for exchanging command data (e.g. "do this command").
 }
 
-// NewConMan instantiates a ConMan, binds a listener to the given address, and waits for a client to connect.
-func NewConMan(bindAddress string) (s ConMan, err error) {
+// NewConMan instantiates a ConMan and binds a listener to the given address.
+func NewConMan(bindAddress string) (newCM ConMan, err error) {
 	l, err := net.Listen("tcp", bindAddress)
 	if err != nil {
 		return ConMan{}, err
@@ -20,15 +20,20 @@ func NewConMan(bindAddress string) (s ConMan, err error) {
 	return ConMan{listener: l}, nil
 }
 
-// WaitForNewConnection waits for a successful connection to the listener and then sets up and returns a
-// comms.Connection.
-func (m ConMan) WaitForNewConnection() comms.Connection {
+// AcceptCmdCon calls m.AcceptSuccessful and then assigns the returned net.Conn to the m.CmdCon field (as a Connection).
+func (m *ConMan) AcceptCmdCon() {
+	newConn := m.AcceptSuccessful()
+	m.CmdCon = comms.NewConnection(newConn)
+}
+
+// AcceptSuccessful waits for a successful connection to the listener and returns the net.Conn.
+func (m ConMan) AcceptSuccessful() net.Conn {
 	for {
 		conn, err := m.listener.Accept()
 		if err != nil {
 			continue
 		}
-		return comms.NewConnection(conn)
+		return conn
 	}
 }
 
