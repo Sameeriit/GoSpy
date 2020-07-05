@@ -29,8 +29,9 @@ func CommandLoop(man conman.ConMan) (err error) {
 		case "grab-file":
 			// ToDo: Validate command (e.g. are there 2 paths supplied?)
 			// ToDo: How to support file path with spaces in?
-			// ToDo: What happens if user requests file that does not exist on client machine?
-			err = commands.GrabFileSend(man, blocks[1], blocks[2])
+			err = commands.FileCmdSend(man, blocks[1], blocks[2], false)
+		case "drop-file":
+			err = commands.FileCmdSend(man, blocks[1], blocks[2], true)
 		}
 
 		if comms.IsNetworkError(err) {

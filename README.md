@@ -45,7 +45,7 @@ These are almost all currently a WIP
 - [x] Automatic reconnect for both client and server
 - [x] Reverse shell
 - [x] File grab
-- [ ] File drop
+- [x] File drop
 - [ ] Screen grab
 - [ ] Execute Lua scripts on target machine (using [gopher-lua](https://github.com/yuin/gopher-lua))
 - [ ] More?
