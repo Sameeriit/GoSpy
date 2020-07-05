@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"github.com/psidex/GoSpy/internal/comms"
 	"github.com/psidex/GoSpy/internal/server/conman"
-	"io"
-	"net"
 	"os"
 )
 
@@ -30,7 +28,7 @@ func FileCmdReply(cmdCon comms.Connection, localFilePath string, dropFile bool) 
 	}
 	defer conn.Close()
 
-	if err = transferFile(conn, localFilePath, !dropFile); err != nil {
+	if err = comms.TransferFile(conn, localFilePath, !dropFile); err != nil {
 		return err
 	}
 	return nil
@@ -47,7 +45,7 @@ func FileCmdSend(man conman.ConMan, srcPath, dstPath string, dropFile bool) (err
 	}
 
 	var cmdText string
-	var localPath string // The path that will be passed to transferFile.
+	var localPath string // The path that will be passed to TransferFile.
 	if dropFile {
 		cmdText = fmt.Sprintf("drop-file %s", dstPath)
 		localPath = srcPath
@@ -72,39 +70,11 @@ func FileCmdSend(man conman.ConMan, srcPath, dstPath string, dropFile bool) (err
 	conn := man.AcceptSuccessful()
 	defer conn.Close()
 
-	if err = transferFile(conn, localPath, dropFile); comms.IsNetworkError(err) {
+	if err = comms.TransferFile(conn, localPath, dropFile); comms.IsNetworkError(err) {
 		fmt.Printf("Error with file drop connection: %s\n", err.Error())
 		return nil
 	} else if err == nil {
 		fmt.Println("File drop complete")
 	}
-	return err
-}
-
-// transferFile transfers a file over the conn. If send is true, open the path for reading and send the read file over
-// conn, otherwise open the path for writing and receives the file contents from conn.
-func transferFile(conn net.Conn, localFilePath string, send bool) (err error) {
-	var fd *os.File
-	if send {
-		fd, err = os.Open(localFilePath)
-	} else {
-		fd, err = os.Create(localFilePath)
-	}
-	if err != nil {
-		return err
-	}
-	defer fd.Close()
-
-	var writer io.Writer
-	var reader io.Reader
-	if send {
-		reader = fd
-		writer = conn
-	} else {
-		reader = conn
-		writer = fd
-	}
-
-	_, err = io.Copy(writer, reader)
 	return err
 }

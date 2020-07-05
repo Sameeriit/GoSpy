@@ -44,12 +44,13 @@ These are almost all currently a WIP
 - [x] Safe error handling so the client / server won't suddenly drop on error
 - [x] Automatic reconnect for both client and server
 - [x] Reverse shell
-- [x] File grab
-- [x] File drop
-- [ ] Screen grab
+- [x] File grab (send a file from the client to the server)
+- [x] File drop (send a file from the server to the client)
 - [ ] Execute Lua scripts on target machine (using [gopher-lua](https://github.com/yuin/gopher-lua))
+  - Useful if you have managed to execute the client on your target but (for whatever reason) the reverse shell can't
+  execute things / isn't working
 - [ ] More?
-- [ ] SSL/TLS?
+  - SSL/TLS?
 
 ## Screenshot
 
