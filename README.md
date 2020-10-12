@@ -43,7 +43,7 @@ your machine to interact with the client.
 - [x] Reverse shell
   - [ ] Smarter shell detection that allows the user to select the shell to use
 - [x] File grab (send a file from the client to the server)
-  - [ ] Allow file paths that contain spaces by using (same for file drop)
+  - [ ] Allow file paths that contain spaces (same for file drop)
 - [x] File drop (send a file from the server to the client)
 - [ ] Execute Lua scripts on target machine using [gopher-lua](https://github.com/yuin/gopher-lua) (Useful if you
   have managed to execute the client on your target but (for whatever reason) the reverse shell can't execute things /
