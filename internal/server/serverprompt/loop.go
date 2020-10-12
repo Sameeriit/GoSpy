@@ -18,6 +18,10 @@ func CommandLoop(man conman.ConMan) (err error) {
 		blocks := strings.Split(strings.TrimSpace(in), " ")
 
 		switch blocks[0] {
+		case "help":
+			for _, s := range suggestions {
+				fmt.Printf("%s: %s\n", s.Text, s.Description)
+			}
 		case "exit":
 			_ = commands.ExitSend(man.CmdCon)
 			man.Stop()

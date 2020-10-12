@@ -25,41 +25,35 @@
 
 ## Disclaimer
 
-This project should be used for authorized testing or educational purposes only.
-
-It is the final user's responsibility to obey all applicable local, state, and federal laws.
+This project should be used for authorized testing or educational purposes only, it is the final user's responsibility
+to obey all applicable local, state, and federal laws.
 
 Authors assume no liability and are not responsible for any misuse or damage caused by this program.
 
 ## Usage
 
-GoSpy consists of 2 binaries, the client is what you execute on your target machine and the server is what you run on
+GoSpy consists of 2 binaries, the client is what you execute on your target machine, and the server is what you run on
 your machine to interact with the client.
 
 ## Features
 
-These are almost all currently a WIP
-
-- [x] Cross-platform with `CGO_ENABLED=0` (compiles to any target that Go supports)
-- [x] Safe error handling so the client / server won't suddenly drop on error
+- [x] Cross-platform with `CGO_ENABLED=0` (should compile to any target that Go supports)
+- [x] Safe error handling so the client / server won't suddenly drop if an error occurs
 - [x] Automatic reconnect for both client and server
 - [x] Reverse shell
+  - [ ] Smarter shell detection that allows the user to select the shell to use
 - [x] File grab (send a file from the client to the server)
+  - [ ] Allow file paths that contain spaces by using (same for file drop)
 - [x] File drop (send a file from the server to the client)
-- [ ] Execute Lua scripts on target machine (using [gopher-lua](https://github.com/yuin/gopher-lua))
-  - Useful if you have managed to execute the client on your target but (for whatever reason) the reverse shell can't
-  execute things / isn't working
-- [ ] More?
+- [ ] Execute Lua scripts on target machine using [gopher-lua](https://github.com/yuin/gopher-lua) (Useful if you
+  have managed to execute the client on your target but (for whatever reason) the reverse shell can't execute things /
+  isn't working)
+- More?
   - SSL/TLS?
 
 ## Screenshot
 
 ![](./demo.png)
-
-## Why?
-
-I wrote this project to learn more about both Go and penetration testing, as I recently completed an "Ethical Hacking"
-unit for my university course and am interested in learning more.
 
 ## Architecture
 
