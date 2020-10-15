@@ -45,7 +45,7 @@ your machine to interact with the client.
 - [x] File grab (send a file from the client to the server)
   - [ ] Allow file paths that contain spaces (same for file drop)
 - [x] File drop (send a file from the server to the client)
-- [ ] Delete command that remove GoSpy binary from client
+- [ ] Delete command that removes GoSpy binary from client
 - [ ] Use UDP broadcasts for discovery
 - [ ] Execute Lua scripts on target machine using [gopher-lua](https://github.com/yuin/gopher-lua) (Useful if you
   have managed to execute the client on your target but (for whatever reason) the reverse shell can't execute things /
